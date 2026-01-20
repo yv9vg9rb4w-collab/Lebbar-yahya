@@ -25,26 +25,16 @@
 <body>
   <h1>📈 Calculatrice graphique Lebbar</h1>
 
-  <!-- Champ pour écrire la fonction -->
-  <input type="text" id="equation" placeholder="Écris une fonction, ex: x^2 ou sin(x)">
-  
-  <!-- Champ pour choisir une valeur de x -->
+  <input type="text" id="equation" placeholder="Ex: x^2 ou sin(x)">
   <input type="number" id="xvalue" placeholder="Valeur de x ?" step="any">
-  
-  <!-- Bouton pour tracer -->
   <button onclick="draw()">Tracer</button>
 
-  <!-- Résultat affiché -->
   <p id="result"></p>
-
-  <!-- Zone de dessin -->
   <canvas id="graph" width="600" height="400"></canvas>
 
   <script>
     function parseExpr(expr, x) {
-      // Remplace ^ par ** (puissance en JS)
       expr = expr.replace(/\^/g, "**");
-      // Ajoute Math. devant sin, cos, tan
       expr = expr.replace(/sin/g, "Math.sin")
                  .replace(/cos/g, "Math.cos")
                  .replace(/tan/g, "Math.tan");
@@ -73,18 +63,18 @@
       ctx.lineTo(originX, canvas.height);
       ctx.stroke();
 
-      // Nombres sur les axes
+      // Nombres sur les axes (positifs et négatifs)
       ctx.fillStyle = "#000";
       ctx.font = "12px Arial";
-      for (let i = -10; i <= 10; i++) {
+      for (let i = -9; i <= 9; i++) {
         if (i !== 0) {
           ctx.fillText(i, originX + i * scale - 5, originY + 15); // X
           ctx.fillText(-i, originX + 5, originY - i * scale + 5); // Y
         }
       }
 
-      // Courbe
-      ctx.strokeStyle = "#00ffcc";
+      // Courbe en noir
+      ctx.strokeStyle = "#000";
       ctx.beginPath();
       for (let px = 0; px < canvas.width; px++) {
         let x = (px - originX) / scale;
@@ -102,11 +92,11 @@
       }
       ctx.stroke();
 
-      // Calcul du résultat pour la valeur choisie
+      // Résultat pour x choisi (sans "y =")
       if (!isNaN(xval)) {
         try {
           const yval = parseExpr(expr, xval);
-          resultBox.innerHTML = `📍 Pour x = ${xval}, y = ${yval.toFixed(4)}`;
+          resultBox.innerHTML = `📍 Résultat : ${yval.toFixed(4)}`;
         } catch {
           resultBox.innerHTML = `❌ Erreur dans l'expression`;
         }
@@ -117,3 +107,4 @@
   </script>
 </body>
 </html>
+
