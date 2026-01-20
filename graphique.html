@@ -11,12 +11,22 @@
 </head>
 <body>
   <h1>📈 Calculatrice graphique Lebbar</h1>
-  <input type="text" id="equation" placeholder="Ex: x*x ou Math.sin(x)">
+  <input type="text" id="equation" placeholder="Ex: x^2 ou sin(x)">
   <button onclick="draw()">Tracer</button>
   <br>
   <canvas id="graph" width="600" height="400"></canvas>
 
   <script>
+    function parseExpr(expr, x) {
+      // Remplace ^ par ** (puissance en JS)
+      expr = expr.replace(/\^/g, "**");
+      // Ajoute Math. devant sin, cos, tan
+      expr = expr.replace(/sin/g, "Math.sin")
+                 .replace(/cos/g, "Math.cos")
+                 .replace(/tan/g, "Math.tan");
+      return eval(expr.replace(/x/g, `(${x})`));
+    }
+
     function draw() {
       const canvas = document.getElementById('graph');
       const ctx = canvas.getContext('2d');
@@ -40,7 +50,7 @@
         let x = (px - canvas.width/2) / 30; // échelle
         let y;
         try {
-          y = eval(expr.replace(/x/g, `(${x})`));
+          y = parseExpr(expr, x);
         } catch {
           y = NaN;
         }
@@ -55,3 +65,4 @@
   </script>
 </body>
 </html>
+
