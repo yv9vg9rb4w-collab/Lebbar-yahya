@@ -2,24 +2,32 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8">
-  <title>CalcPro</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Accueil - Calculatrice CalcPro</title>
   <style>
-    body { background:#121212; color:white; font-family:Arial; margin:0; padding:20px; }
-    h1 { text-align:center; color:#00ffcc; }
-    .tool-list { display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:20px; margin-top:30px; }
-    .tool { background:#1e1e1e; border-radius:10px; padding:20px; text-align:center; box-shadow:0 0 10px #00ffcc55; transition:transform 0.2s; }
-    .tool:hover { transform:scale(1.05); }
-    .tool a { text-decoration:none; color:white; display:block; }
-    .icon { font-size:40px; margin-bottom:10px; }
+    body {
+      background: #f2f2f7;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      text-align: center;
+      color: #000;
+    }
+    footer {
+      margin-top: 40px;
+      font-size: 14px;
+      color: #555;
+    }
   </style>
 </head>
 <body>
-  <h1>🌐 Bienvenue sur CalcPro</h1>
-  <div class="tool-list">
-    <div class="tool"><a href="graphique.html"><div class="icon">📈</div>Calculatrice graphique</a></div>
-    <div class="tool"><a href="scientifique.html"><div class="icon">🧪</div>Calculatrice scientifique</a></div>
-    <div class="tool"><a href="matrices.html"><div class="icon">📊</div>Calculatrice matrices</a></div>
-  </div>
+  <h1>Bienvenue sur la Calculatrice CalcPro Style</h1>
+  <p>Choisissez votre calculatrice :</p>
+  <ul style="list-style:none; padding:0;">
+    <li><a href="scientifique.html">🧮 Calculatrice scientifique</a></li>
+    <li><a href="graphique.html">📈 Calculatrice graphique</a></li>
+  </ul>
+
+  <!-- Mention du créateur -->
+  <footer>
+    Créateur : <strong>Lebbar, Yahya</strong>
+  </footer>
 </body>
 </html>
