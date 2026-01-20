@@ -1,148 +1,129 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Calculatrice Scientifique</title>
-<style>
+  <meta charset="UTF-8">
+  <title>Calculatrice scientifique iPhone Style</title>
+  <style>
     body {
-        background: #000;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        height: 100vh;
-        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: #f2f2f7; /* fond gris clair typique iOS */
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      text-align: center;
+      color: #000;
     }
-    .calculator {
-        background: #1c1c1c;
-        border-radius: 30px;
-        padding: 20px;
-        width: 360px;
-        box-shadow: 0 0 30px rgba(0,0,0,0.7);
+
+    .calc {
+      display: inline-block;
+      background: #ffffff;
+      padding: 20px;
+      border-radius: 30px; /* coins arrondis façon iPhone */
+      box-shadow: 0 10px 20px rgba(0,0,0,0.15);
+      margin-top: 40px;
     }
-    .display {
-        background: #000;
-        color: #fff;
-        font-size: 2rem;
-        text-align: right;
-        padding: 20px;
-        border-radius: 20px;
-        margin-bottom: 10px;
-        overflow-x: auto;
+
+    input {
+      width: 260px;
+      padding: 15px;
+      font-size: 22px;
+      margin-bottom: 15px;
+      text-align: right;
+      border: none;
+      border-radius: 15px;
+      background: #f9f9f9;
+      box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);
     }
-    .buttons {
-        display: grid;
-        grid-template-columns: repeat(5, 1fr);
-        grid-gap: 10px;
-    }
+
     button {
-        padding: 20px;
-        font-size: 1.2rem;
-        border: none;
-        border-radius: 15px;
-        background: #333;
-        color: #fff;
-        cursor: pointer;
-        transition: 0.2s;
+      width: 60px;
+      height: 60px;
+      margin: 8px;
+      font-size: 18px;
+      border: none;
+      border-radius: 50%; /* boutons ronds comme sur iPhone */
+      background: #e0e0e5;
+      color: #000;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+      transition: all 0.2s ease;
+      cursor: pointer;
     }
-    button:hover {
-        background: #555;
+
+    button:active {
+      background: #d1d1d6; /* effet appuyé */
+      transform: scale(0.95);
     }
-    button.orange {
-        background: #ff9500;
-        color: #fff;
+
+    /* Boutons spéciaux */
+    button.operator {
+      background: #ff9500; /* orange iOS pour opérateurs */
+      color: #fff;
     }
-    button.red {
-        background: #ff3b30;
-        color: #fff;
+
+    button.equal {
+      background: #34c759; /* vert iOS pour égal */
+      color: #fff;
     }
-</style>
+
+    button.clear {
+      background: #ff3b30; /* rouge iOS pour C */
+      color: #fff;
+    }
+  </style>
 </head>
 <body>
+  <h1>🧮 Calculatrice scientifique style iPhone</h1>
+  <div class="calc">
+    <input type="text" id="display" readonly>
+    <br>
+    <!-- Ligne 1 -->
+    <button onclick="insert('7')">7</button>
+    <button onclick="insert('8')">8</button>
+    <button onclick="insert('9')">9</button>
+    <button onclick="insert('/')"
+            class="operator">÷</button><br>
+    <!-- Ligne 2 -->
+    <button onclick="insert('4')">4</button>
+    <button onclick="insert('5')">5</button>
+    <button onclick="insert('6')">6</button>
+    <button onclick="insert('*')"
+            class="operator">×</button><br>
+    <!-- Ligne 3 -->
+    <button onclick="insert('1')">1</button>
+    <button onclick="insert('2')">2</button>
+    <button onclick="insert('3')">3</button>
+    <button onclick="insert('-')"
+            class="operator">−</button><br>
+    <!-- Ligne 4 -->
+    <button onclick="insert('0')">0</button>
+    <button onclick="insert('.')">.</button>
+    <button onclick="calculate()" class="equal">=</button>
+    <button onclick="insert('+')" class="operator">+</button><br>
+    <!-- Fonctions scientifiques -->
+    <button onclick="insert('Math.sin(')">sin</button>
+    <button onclick="insert('Math.cos(')">cos</button>
+    <button onclick="insert('Math.tan(')">tan</button>
+    <button onclick="insert('Math.sqrt(')">√</button><br>
+    <button onclick="insert('Math.log(')">ln</button>
+    <button onclick="insert('Math.log10(')">log</button>
+    <button onclick="insert('Math.PI')">π</button>
+    <button onclick="insert('Math.E')">e</button><br>
+    <button onclick="clearDisplay()" class="clear">C</button>
+  </div>
 
-<div class="calculator">
-    <div class="display" id="display">0</div>
-    <div class="buttons">
-        <button class="red" onclick="clearDisplay()">C</button>
-        <button onclick="backspace()">⌫</button>
-        <button onclick="press('(')">(</button>
-        <button onclick="press(')')">)</button>
-        <button onclick="press('/')">÷</button>
+  <p><a href="index.html" style="color:#007aff; text-decoration:none;">⬅ Retour à l’accueil</a></p>
 
-        <button onclick="press('7')">7</button>
-        <button onclick="press('8')">8</button>
-        <button onclick="press('9')">9</button>
-        <button onclick="press('*')">×</button>
-        <button onclick="press('sqrt(')">√</button>
-
-        <button onclick="press('4')">4</button>
-        <button onclick="press('5')">5</button>
-        <button onclick="press('6')">6</button>
-        <button onclick="press('-')">−</button>
-        <button onclick="press('**2')">x²</button>
-
-        <button onclick="press('1')">1</button>
-        <button onclick="press('2')">2</button>
-        <button onclick="press('3')">3</button>
-        <button onclick="press('+')">+</button>
-        <button onclick="press('**3')">x³</button>
-
-        <button onclick="press('0')">0</button>
-        <button onclick="press('.')">.</button>
-        <button onclick="press('Math.PI')">π</button>
-        <button onclick="press('Math.E')">e</button>
-        <button class="orange" onclick="calculate()">=</button>
-
-        <button onclick="press('Math.sin(')">sin</button>
-        <button onclick="press('Math.cos(')">cos</button>
-        <button onclick="press('Math.tan(')">tan</button>
-        <button onclick="press('Math.log(')">ln</button>
-        <button onclick="press('!')">!</button>
-    </div>
-</div>
-
-<script>
-    const display = document.getElementById('display');
-
-    function press(key) {
-        if(display.innerText === '0') display.innerText = '';
-        display.innerText += key;
+  <script>
+    function insert(val) {
+      document.getElementById('display').value += val;
     }
-
-    function clearDisplay() {
-        display.innerText = '0';
-    }
-
-    function backspace() {
-        display.innerText = display.innerText.slice(0, -1);
-        if(display.innerText === '') display.innerText = '0';
-    }
-
-    function factorial(n) {
-        if(n < 0) return NaN;
-        if(n === 0 || n === 1) return 1;
-        let res = 1;
-        for(let i=2;i<=n;i++) res *= i;
-        return res;
-    }
-
     function calculate() {
-        try {
-            let expr = display.innerText;
-
-            // Gérer le factorial
-            if(expr.includes('!')) {
-                expr = expr.replace(/(\d+)!/g, 'factorial($1)');
-            }
-
-            expr = expr.replace('√', 'Math.sqrt');
-            const result = eval(expr);
-            display.innerText = result;
-        } catch {
-            display.innerText = 'Erreur';
-        }
+      try {
+        document.getElementById('display').value = eval(document.getElementById('display').value);
+      } catch {
+        document.getElementById('display').value = "Erreur";
+      }
     }
-</script>
-
+    function clearDisplay() {
+      document.getElementById('display').value = "";
+    }
+  </script>
 </body>
 </html>
