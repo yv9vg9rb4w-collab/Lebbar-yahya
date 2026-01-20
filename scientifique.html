@@ -2,52 +2,53 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8">
-  <title>Calculatrice Lebbar</title>
+  <title>Calculatrice iPhone Lebbar</title>
   <style>
     body {
-      background: #f2f2f7;
+      background: #000; /* mode sombre par défaut */
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
       text-align: center;
-      color: #000;
+      color: #fff;
+      transition: background 0.3s, color 0.3s;
     }
 
     .calc {
       display: inline-block;
-      background: #ffffff;
+      background: #1c1c1e;
       padding: 20px;
       border-radius: 30px;
-      box-shadow: 0 10px 20px rgba(0,0,0,0.15);
+      box-shadow: 0 10px 20px rgba(0,0,0,0.5);
       margin-top: 40px;
     }
 
     input {
-      width: 260px;
+      width: 280px;
       padding: 15px;
-      font-size: 22px;
+      font-size: 24px;
       margin-bottom: 15px;
       text-align: right;
       border: none;
       border-radius: 15px;
-      background: #f9f9f9;
-      box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);
+      background: #2c2c2e;
+      color: #fff;
+      box-shadow: inset 0 2px 4px rgba(0,0,0,0.3);
     }
 
     button {
-      width: 60px;
-      height: 60px;
+      width: 65px;
+      height: 65px;
       margin: 6px;
       font-size: 18px;
       border: none;
       border-radius: 50%;
-      background: #e0e0e5;
-      color: #000;
-      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+      background: #505050;
+      color: #fff;
       transition: all 0.2s ease;
       cursor: pointer;
     }
 
     button:active {
-      background: #d1d1d6;
+      background: #737373;
       transform: scale(0.95);
     }
 
@@ -65,10 +66,32 @@
       background: #ff3b30;
       color: #fff;
     }
+
+    /* Mode clair */
+    body.light {
+      background: #f2f2f7;
+      color: #000;
+    }
+    body.light .calc {
+      background: #ffffff;
+      box-shadow: 0 10px 20px rgba(0,0,0,0.15);
+    }
+    body.light input {
+      background: #f9f9f9;
+      color: #000;
+    }
+    body.light button {
+      background: #e0e0e5;
+      color: #000;
+    }
+    body.light button:active {
+      background: #d1d1d6;
+    }
   </style>
 </head>
 <body>
-  <h1>📱 Calculatrice scientifique de Lebbar</h1>
+  <h1>📱 Calculatrice scientifique iPhone Lebbar</h1>
+  <button onclick="toggleMode()">🌗 Mode</button>
   <div class="calc">
     <input type="text" id="display" readonly>
     <br>
@@ -98,13 +121,13 @@
     <button onclick="insert('sin(')">sin</button>
     <button onclick="insert('cos(')">cos</button>
     <button onclick="insert('tan(')">tan</button>
-    <button onclick="insert('√')">√</button><br>
-    <button onclick="insert('Math.pow(')">xʸ</button>
+    <button onclick="insert('racine(')">√</button><br>
+    <button onclick="insert('pow(')">xʸ</button>
     <button onclick="insert('ln(')">ln</button>
     <button onclick="insert('log(')">log</button>
-    <button onclick="insert('e')">eˣ</button><br>
-    <button onclick="insert('π')">π</button>
-    <button onclick="insert('e)">e</button>
+    <button onclick="insert('exp(')">eˣ</button><br>
+    <button onclick="insert('pi')">π</button>
+    <button onclick="insert('e')">e</button>
     <button onclick="clearDisplay()" class="clear">C</button>
   </div>
 
@@ -115,18 +138,32 @@
 
     function calculate() {
       let expr = document.getElementById('display').value;
-      expr = expr.replace(/racine/g, "Math.sqrt"); // support "racine(9)"
+
+      // Traductions pour que ça marche en JS
+      expr = expr.replace(/sin\(/g, "Math.sin(");
+      expr = expr.replace(/cos\(/g, "Math.cos(");
+      expr = expr.replace(/tan\(/g, "Math.tan(");
+      expr = expr.replace(/racine\(/g, "Math.sqrt(");
+      expr = expr.replace(/pow\(/g, "Math.pow(");
+      expr = expr.replace(/log\(/g, "Math.log10(");
+      expr = expr.replace(/ln\(/g, "Math.log(");
+      expr = expr.replace(/exp\(/g, "Math.exp(");
+      expr = expr.replace(/pi/g, "Math.PI");
+      expr = expr.replace(/e/g, "Math.E");
+
       try {
         document.getElementById('display').value = eval(expr);
       } catch {
         document.getElementById('display').value = "Erreur";
-        stop{
       }
     }
-}
-    
+
     function clearDisplay() {
       document.getElementById('display').value = "";
+    }
+
+    function toggleMode() {
+      document.body.classList.toggle("light");
     }
   </script>
 </body>
