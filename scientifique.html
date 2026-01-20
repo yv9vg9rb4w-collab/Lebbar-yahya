@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8">
-  <title>Calculatrice scientifique iPhone Style</title>
+  <title>Calculatrice iPhone Lebbar</title>
   <style>
     body {
       background: #f2f2f7;
@@ -68,11 +68,12 @@
   </style>
 </head>
 <body>
-  <h1>🧮 Calculatrice scientifique style iPhone</h1>
+  <h1>📱 Calculatrice scientifique iPhone Lebbar</h1>
   <div class="calc">
     <input type="text" id="display" readonly>
     <br>
-    <!-- Nombres -->
+
+    <!-- Nombres et opérations -->
     <button onclick="insert('7')">7</button>
     <button onclick="insert('8')">8</button>
     <button onclick="insert('9')">9</button>
@@ -114,8 +115,7 @@
 
     function calculate() {
       let expr = document.getElementById('display').value;
-      // Ajout support pour "racine" en français
-      expr = expr.replace(/racine/g, "Math.sqrt");
+      expr = expr.replace(/racine/g, "Math.sqrt"); // support "racine(9)"
       try {
         document.getElementById('display').value = eval(expr);
       } catch {
