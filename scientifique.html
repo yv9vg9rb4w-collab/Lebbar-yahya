@@ -1,85 +1,79 @@
 import tkinter as tk
-from math import sin, cos, tan, asin, acos, atan, log, log10, sqrt, factorial, pi, e
+from math import sin, cos, tan, log, sqrt, pi, e, factorial
 
-# ---------------- Fenêtre principale ----------------
+# Créer la fenêtre principale
 root = tk.Tk()
 root.title("Calculatrice Scientifique")
 root.geometry("400x600")
 root.resizable(False, False)
-root.configure(bg="#222222")
 
-# ---------------- Zone d'affichage ----------------
+# Variable pour stocker l'entrée
 entry_text = tk.StringVar()
-entry = tk.Entry(root, textvariable=entry_text, font=('Arial', 24), bd=0, bg="#222222", fg="#ffffff", justify='right')
-entry.pack(fill='both', ipadx=8, ipady=25, pady=10, padx=10)
+entry = tk.Entry(root, textvariable=entry_text, font=('Arial', 20), bd=5, relief='ridge', justify='right')
+entry.pack(fill='both', ipadx=8, ipady=15, pady=10, padx=10)
 
-# ---------------- Fonctions ----------------
+# Fonction pour ajouter du texte à l'entrée
 def press(key):
     entry_text.set(entry_text.get() + str(key))
 
+# Fonction pour effacer
 def clear():
     entry_text.set("")
 
-def backspace():
-    entry_text.set(entry_text.get()[:-1])
-
+# Fonction pour calculer le résultat
 def calculate():
     try:
         expr = entry_text.get()
-        expr = expr.replace('π', str(pi)).replace('e', str(e)).replace('√', 'sqrt')
+        # Remplacer les symboles spéciaux pour eval
+        expr = expr.replace('√', 'sqrt').replace('π', str(pi)).replace('e', str(e))
         result = eval(expr)
         entry_text.set(result)
-    except:
+    except Exception:
         entry_text.set("Erreur")
 
+# Fonction pour les fonctions scientifiques
 def scientific(func):
     try:
         value = float(entry_text.get())
-        if func == 'sin': entry_text.set(sin(value))
-        elif func == 'cos': entry_text.set(cos(value))
-        elif func == 'tan': entry_text.set(tan(value))
-        elif func == 'asin': entry_text.set(asin(value))
-        elif func == 'acos': entry_text.set(acos(value))
-        elif func == 'atan': entry_text.set(atan(value))
-        elif func == 'log': entry_text.set(log(value))
-        elif func == 'log10': entry_text.set(log10(value))
-        elif func == '√': entry_text.set(sqrt(value))
-        elif func == '!': entry_text.set(factorial(int(value)))
-        elif func == '±': entry_text.set(-value)
-        elif func == 'x²': entry_text.set(value**2)
-        elif func == 'x³': entry_text.set(value**3)
-        elif func == '1/x': entry_text.set(1/value)
-    except:
+        if func == 'sin':
+            entry_text.set(sin(value))
+        elif func == 'cos':
+            entry_text.set(cos(value))
+        elif func == 'tan':
+            entry_text.set(tan(value))
+        elif func == 'log':
+            entry_text.set(log(value))
+        elif func == '√':
+            entry_text.set(sqrt(value))
+        elif func == '!':
+            entry_text.set(factorial(int(value)))
+    except Exception:
         entry_text.set("Erreur")
 
-# ---------------- Boutons ----------------
-button_style = {'font':('Arial',16), 'bd':0, 'fg':'#fff', 'bg':'#333333', 'activebackground':'#555555', 'activeforeground':'#fff', 'height':2, 'width':6}
-
+# Créer les boutons
 buttons = [
-    ['C', '⌫', '±', '√', '/'],
-    ['7', '8', '9', 'x²', '*'],
-    ['4', '5', '6', 'x³', '-'],
-    ['1', '2', '3', '1/x', '+'],
-    ['0', '.', 'π', 'e', '='],
-    ['sin', 'cos', 'tan', 'asin', 'acos'],
-    ['atan', 'log', 'log10', '!', '(' ,')']
+    ['7', '8', '9', '/', 'C'],
+    ['4', '5', '6', '*', '√'],
+    ['1', '2', '3', '-', 'sin'],
+    ['0', '.', '=', '+', 'cos'],
+    ['(', ')', 'π', 'e', 'tan'],
+    ['log', '!']
 ]
 
+# Ajouter les boutons à l'interface
 for r, row in enumerate(buttons):
-    frame = tk.Frame(root, bg="#222222")
+    frame = tk.Frame(root)
     frame.pack(expand=True, fill='both')
     for c, btn in enumerate(row):
         if btn == '=':
-            b = tk.Button(frame, text=btn, **button_style, bg='#ff9500', command=calculate)
+            b = tk.Button(frame, text=btn, font=('Arial', 18), command=calculate)
         elif btn == 'C':
-            b = tk.Button(frame, text=btn, **button_style, bg='#ff3b30', command=clear)
-        elif btn == '⌫':
-            b = tk.Button(frame, text=btn, **button_style, command=backspace)
-        elif btn in ['sin','cos','tan','asin','acos','atan','log','log10','√','!','±','x²','x³','1/x']:
-            b = tk.Button(frame, text=btn, **button_style, command=lambda f=btn: scientific(f))
+            b = tk.Button(frame, text=btn, font=('Arial', 18), command=clear)
+        elif btn in ['sin', 'cos', 'tan', 'log', '√', '!']:
+            b = tk.Button(frame, text=btn, font=('Arial', 18), command=lambda f=btn: scientific(f))
         else:
-            b = tk.Button(frame, text=btn, **button_style, command=lambda k=btn: press(k))
+            b = tk.Button(frame, text=btn, font=('Arial', 18), command=lambda k=btn: press(k))
         b.pack(side='left', expand=True, fill='both')
 
-# ---------------- Lancer l'application ----------------
+# Lancer la boucle principale
 root.mainloop()
