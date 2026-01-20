@@ -29,7 +29,7 @@
     ctx.strokeStyle = "#00ffcc";
     ctx.beginPath();
     for (let px = 0; px < canvas.width; px++) {
-      let x = (px - canvas.width/2) / 30;
+      let x = (px - canvas.width/2) / 30; // échelle
       let y = x * x;
       let py = canvas.height/2 - y * 30;
       if (px === 0) ctx.moveTo(px, py);
@@ -39,5 +39,3 @@
   </script>
 </body>
 </html>
-
-
