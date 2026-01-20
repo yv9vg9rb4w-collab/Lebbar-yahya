@@ -5,7 +5,7 @@
   <title>Calculatrice scientifique iPhone Style</title>
   <style>
     body {
-      background: #f2f2f7; /* fond gris clair typique iOS */
+      background: #f2f2f7;
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
       text-align: center;
       color: #000;
@@ -15,7 +15,7 @@
       display: inline-block;
       background: #ffffff;
       padding: 20px;
-      border-radius: 30px; /* coins arrondis façon iPhone */
+      border-radius: 30px;
       box-shadow: 0 10px 20px rgba(0,0,0,0.15);
       margin-top: 40px;
     }
@@ -35,10 +35,10 @@
     button {
       width: 60px;
       height: 60px;
-      margin: 8px;
+      margin: 6px;
       font-size: 18px;
       border: none;
-      border-radius: 50%; /* boutons ronds comme sur iPhone */
+      border-radius: 50%;
       background: #e0e0e5;
       color: #000;
       box-shadow: 0 4px 6px rgba(0,0,0,0.1);
@@ -47,23 +47,22 @@
     }
 
     button:active {
-      background: #d1d1d6; /* effet appuyé */
+      background: #d1d1d6;
       transform: scale(0.95);
     }
 
-    /* Boutons spéciaux */
     button.operator {
-      background: #ff9500; /* orange iOS pour opérateurs */
+      background: #ff9500;
       color: #fff;
     }
 
     button.equal {
-      background: #34c759; /* vert iOS pour égal */
+      background: #34c759;
       color: #fff;
     }
 
     button.clear {
-      background: #ff3b30; /* rouge iOS pour C */
+      background: #ff3b30;
       color: #fff;
     }
   </style>
@@ -73,54 +72,57 @@
   <div class="calc">
     <input type="text" id="display" readonly>
     <br>
-    <!-- Ligne 1 -->
+    <!-- Nombres -->
     <button onclick="insert('7')">7</button>
     <button onclick="insert('8')">8</button>
     <button onclick="insert('9')">9</button>
     <button onclick="insert('/')"
             class="operator">÷</button><br>
-    <!-- Ligne 2 -->
     <button onclick="insert('4')">4</button>
     <button onclick="insert('5')">5</button>
     <button onclick="insert('6')">6</button>
     <button onclick="insert('*')"
             class="operator">×</button><br>
-    <!-- Ligne 3 -->
     <button onclick="insert('1')">1</button>
     <button onclick="insert('2')">2</button>
     <button onclick="insert('3')">3</button>
     <button onclick="insert('-')"
             class="operator">−</button><br>
-    <!-- Ligne 4 -->
     <button onclick="insert('0')">0</button>
     <button onclick="insert('.')">.</button>
     <button onclick="calculate()" class="equal">=</button>
     <button onclick="insert('+')" class="operator">+</button><br>
+
     <!-- Fonctions scientifiques -->
     <button onclick="insert('Math.sin(')">sin</button>
     <button onclick="insert('Math.cos(')">cos</button>
     <button onclick="insert('Math.tan(')">tan</button>
     <button onclick="insert('Math.sqrt(')">√</button><br>
+    <button onclick="insert('Math.pow(')">xʸ</button>
     <button onclick="insert('Math.log(')">ln</button>
     <button onclick="insert('Math.log10(')">log</button>
+    <button onclick="insert('Math.exp(')">eˣ</button><br>
     <button onclick="insert('Math.PI')">π</button>
-    <button onclick="insert('Math.E')">e</button><br>
+    <button onclick="insert('Math.E')">e</button>
     <button onclick="clearDisplay()" class="clear">C</button>
   </div>
-
-  <p><a href="index.html" style="color:#007aff; text-decoration:none;">⬅ Retour à l’accueil</a></p>
 
   <script>
     function insert(val) {
       document.getElementById('display').value += val;
     }
+
     function calculate() {
+      let expr = document.getElementById('display').value;
+      // Ajout support pour "racine" en français
+      expr = expr.replace(/racine/g, "Math.sqrt");
       try {
-        document.getElementById('display').value = eval(document.getElementById('display').value);
+        document.getElementById('display').value = eval(expr);
       } catch {
         document.getElementById('display').value = "Erreur";
       }
     }
+
     function clearDisplay() {
       document.getElementById('display').value = "";
     }
