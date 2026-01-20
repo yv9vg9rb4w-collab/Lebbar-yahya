@@ -24,15 +24,27 @@
 </head>
 <body>
   <h1>📈 Calculatrice graphique Lebbar</h1>
-  <input type="text" id="equation" placeholder="Ex: x^2 ou sin(x)">
-  <input type="number" id="xvalue" placeholder="x = ?" step="any">
+
+  <!-- Champ pour écrire la fonction -->
+  <input type="text" id="equation" placeholder="Écris une fonction, ex: x^2 ou sin(x)">
+  
+  <!-- Champ pour choisir une valeur de x -->
+  <input type="number" id="xvalue" placeholder="Valeur de x ?" step="any">
+  
+  <!-- Bouton pour tracer -->
   <button onclick="draw()">Tracer</button>
+
+  <!-- Résultat affiché -->
   <p id="result"></p>
+
+  <!-- Zone de dessin -->
   <canvas id="graph" width="600" height="400"></canvas>
 
   <script>
     function parseExpr(expr, x) {
+      // Remplace ^ par ** (puissance en JS)
       expr = expr.replace(/\^/g, "**");
+      // Ajoute Math. devant sin, cos, tan
       expr = expr.replace(/sin/g, "Math.sin")
                  .replace(/cos/g, "Math.cos")
                  .replace(/tan/g, "Math.tan");
@@ -90,7 +102,7 @@
       }
       ctx.stroke();
 
-      // Calcul du résultat
+      // Calcul du résultat pour la valeur choisie
       if (!isNaN(xval)) {
         try {
           const yval = parseExpr(expr, xval);
