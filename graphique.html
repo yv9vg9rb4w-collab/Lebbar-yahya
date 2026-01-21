@@ -110,7 +110,27 @@
       resultBox.innerHTML = `ℹ️ Tape une valeur de x pour calculer`;
     }
   }
+
+  /* Style par défaut (mobile) */
+.graph-calc {
+  width: 100%;
+  max-width: 360px;   /* limite comme un téléphone */
+  margin: 20px auto;
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+  padding: 20px;
+}
+
+/* Version PC (grand écran) */
+@media (min-width: 768px) {
+  .graph-calc {
+    max-width: 900px;   /* beaucoup plus large */
+    height: 600px;      /* espace pour le graphe */
+  }
+}
+
 </script>
- </body>
+</body>
 </html>
 
