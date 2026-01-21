@@ -89,7 +89,7 @@
       <button onclick="insert('sin(')">sin</button>
       <button onclick="insert('cos(')">cos</button>
       <button onclick="insert('tan(')">tan</button>
-      <button onclick="insert('√(')">√</button>
+      <button onclick="insert('√('))">√</button>
  
     </div>
     <div class="row">
@@ -124,8 +124,31 @@
   .replace(/pi/g, "Math.PI")
   .replace(/e/g, "Math.E")
   .replace(/(\d+)\^(\d+)/g, "Math.pow($1,$2)");
+      function calculate() {
+  let expr = document.getElementById("display").value;
 
-      try {
+  // Traduction des symboles
+  expr = expr
+    .replace(/√\(/g, "Math.sqrt(")
+    .replace(/sin\(/g, "Math.sin(")
+    .replace(/cos\(/g, "Math.cos(")
+    .replace(/tan\(/g, "Math.tan(")
+    .replace(/log\(/g, "Math.log10(")
+    .replace(/ln\(/g, "Math.log(")
+    .replace(/pi/g, "Math.PI")
+    .replace(/e/g, "Math.E")
+    .replace(/(\d+)\^(\d+)/g, "Math.pow($1,$2)");
+
+  try {
+    // Vérifier si les parenthèses sont équilibrées
+    let open = (expr.match(/\(/g) || []).length;
+    let close = (expr.match(/\)/g) || []).length;
+    if (open !== close) {
+      document.getElementById("display").value = "Erreur: parenthèse manquante";
+      return;
+    }
+
+    try {
         let result = eval(expr);
         lastAnswer = result;
         document.getElementById("display").value = result;
