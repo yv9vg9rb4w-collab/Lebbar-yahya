@@ -137,13 +137,12 @@ function calc(){
         e=e.replace(/÷/g,"/");
         e=e.replace(/×/g,"*");
         e=e.replace(/\^/g,"**");
-        e=e.replace(/sqrt/g,"Math.sqrt");
         e=e.replace(/sin/g,"Math.sin");
         e=e.replace(/cos/g,"Math.cos");
         e=e.replace(/tan/g,"Math.tan");
         e=e.replace(/log/g,"Math.log10");
         e=e.replace(/ln/g,"Math.log");
-        e=e.replace(/pi/g,"Math.PI");
+        
 
         let result=Function("return "+e)();
         screen.innerText=result;
