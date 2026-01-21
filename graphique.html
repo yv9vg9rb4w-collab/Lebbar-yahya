@@ -42,24 +42,15 @@
       margin-top: 20px;
       box-shadow: 0 0 10px #00ffcc55;
     }
-    footer {
-      margin-top: 40px;
-      font-size: 14px;
-      color: #aaa;
-    }
   </style>
 </head>
 <body>
   <h1>📈 Calculatrice graphique</h1>
   <div id="controls">
-    <input type="text" id="equation" placeholder="Exemple : x^2, sin(x), cos(x), tan(x)">
+    <input type="text" id="equation" placeholder="Exemple : x^2, sin(x), cos(x), tan(x), log(x), ln(x)">
     <button onclick="drawGraph()">Tracer</button>
   </div>
   <canvas id="graphCanvas" width="900" height="500"></canvas>
-
-  <footer>
-    Créateur : <strong>Yahya Lebbar</strong>
-  </footer>
 
   <script>
     function drawGraph() {
@@ -67,14 +58,13 @@
       const ctx = canvas.getContext('2d');
       const exprInput = document.getElementById('equation').value;
 
-      // Séparer les équations par virgule
       const equations = exprInput.split(",").map(e => e.trim());
 
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
       const width = canvas.width;
       const height = canvas.height;
-      const scaleX = 40;
+      const scaleX = 40; // 40px = 1 unité
       const scaleY = 40;
       const originX = width / 2;
       const originY = height / 2;
@@ -88,43 +78,32 @@
       ctx.lineTo(originX, height);
       ctx.stroke();
 
-      // Palette de couleurs
+      // Graduations X
+      ctx.fillStyle = "#aaa";
+      ctx.font = "12px Arial";
+      for (let i = -Math.floor(width/(2*scaleX)); i <= Math.floor(width/(2*scaleX)); i++) {
+        const px = originX + i * scaleX;
+        ctx.beginPath();
+        ctx.moveTo(px, originY - 5);
+        ctx.lineTo(px, originY + 5);
+        ctx.stroke();
+        ctx.fillText(i.toString(), px - 5, originY + 20);
+      }
+
+      // Graduations Y
+      for (let j = -Math.floor(height/(2*scaleY)); j <= Math.floor(height/(2*scaleY)); j++) {
+        const py = originY - j * scaleY;
+        ctx.beginPath();
+        ctx.moveTo(originX - 5, py);
+        ctx.lineTo(originX + 5, py);
+        ctx.stroke();
+        if (j !== 0) {
+          ctx.fillText(j.toString(), originX + 10, py + 5);
+        }
+      }
+
+      // Couleurs
       const colors = ["#00ffcc", "#ff0066", "#ffaa00", "#66ff00", "#0099ff", "#ff00ff"];
-
-    // Axes avec graduations
-ctx.strokeStyle = "#888";
-ctx.beginPath();
-ctx.moveTo(0, originY);
-ctx.lineTo(width, originY);
-ctx.moveTo(originX, 0);
-ctx.lineTo(originX, height);
-ctx.stroke();
-
-// Graduations en X
-for (let i = -10; i <= 10; i++) {
-  const px = originX + i * scaleX;
-  ctx.beginPath();
-  ctx.moveTo(px, originY - 5);
-  ctx.lineTo(px, originY + 5);
-  ctx.stroke();
-  ctx.fillStyle = "#aaa";
-  ctx.font = "12px Arial";
-  ctx.fillText(i.toString(), px - 5, originY + 20);
-}
-
-// Graduations en Y
-for (let j = -5; j <= 5; j++) {
-  const py = originY - j * scaleY;
-  ctx.beginPath();
-  ctx.moveTo(originX - 5, py);
-  ctx.lineTo(originX + 5, py);
-  ctx.stroke();
-  ctx.fillStyle = "#aaa";
-  ctx.font = "12px Arial";
-  if (j !== 0) { // éviter d’écrire 0 deux fois
-    ctx.fillText(j.toString(), originX + 10, py + 5);
-  }
-}
 
       // Tracer chaque équation
       equations.forEach((expr, idx) => {
@@ -138,14 +117,13 @@ for (let j = -5; j <= 5; j++) {
               .replace(/sin\(/g, "Math.sin(")
               .replace(/cos\(/g, "Math.cos(")
               .replace(/tan\(/g, "Math.tan(")
-              .replace(/log\(/g, "Math.log10(")
-              .replace(/ln\(/g, "Math.log(")
+              .replace(/log\(/g, "Math.log10(") // log base 10
+              .replace(/ln\(/g, "Math.log(")    // ln naturel
               .replace(/sqrt\(/g, "Math.sqrt(")
               .replace(/pi/g, "Math.PI")
               .replace(/e/g, "Math.E")
               .replace(/(\w+)\s*\^\s*(\w+)/g, "Math.pow($1,$2)");
 
-            // Remplacer x par sa valeur numérique
             y = eval(exprJS.replace(/x/g, `(${x})`));
           } catch {
             y = NaN;
