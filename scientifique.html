@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8">
-  <title>Calculatrice scientifique améliorée</title>
+  <title>Calculatrice scientifique</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
     body {
@@ -16,19 +16,26 @@
     h1 {
       color: #00ffcc;
     }
-    #controls {
-      margin: 20px 0;
+    #calc {
+      display: inline-block;
+      background: #1e1e1e;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 0 10px #00ffcc55;
     }
     input {
+      width: 100%;
       padding: 10px;
-      font-size: 16px;
-      width: 400px;
+      font-size: 18px;
+      margin-bottom: 10px;
       border-radius: 6px;
       border: none;
+      text-align: right;
     }
     button {
-      padding: 10px 20px;
-      margin-left: 10px;
+      width: 70px;
+      height: 50px;
+      margin: 5px;
       font-size: 16px;
       border-radius: 6px;
       border: none;
@@ -36,120 +43,83 @@
       color: #121212;
       cursor: pointer;
     }
-    canvas {
-      background: #1e1e1e;
-      border-radius: 10px;
-      margin-top: 20px;
-      box-shadow: 0 0 10px #00ffcc55;
-    }
-    footer {
-      margin-top: 40px;
-      font-size: 14px;
-      color: #aaa;
+    button:active {
+      background-color: #009999;
     }
   </style>
 </head>
 <body>
-  <h1>📐 Calculatrice scientifique améliorée</h1>
-  <div id="controls">
-    <input type="text" id="equation" placeholder="Exemple : x^2, sin(x), cos(x), tan(x), log(x), ln(x)">
-    <button onclick="drawGraph()">Tracer</button>
+  <h1>📐 Calculatrice scientifique</h1>
+  <div id="calc">
+    <input type="text" id="display" readonly>
+    <div>
+      <button onclick="insert('7')">7</button>
+      <button onclick="insert('8')">8</button>
+      <button onclick="insert('9')">9</button>
+      <button onclick="insert('/')">÷</button>
+    </div>
+    <div>
+      <button onclick="insert('4')">4</button>
+      <button onclick="insert('5')">5</button>
+      <button onclick="insert('6')">6</button>
+      <button onclick="insert('*')">×</button>
+    </div>
+    <div>
+      <button onclick="insert('1')">1</button>
+      <button onclick="insert('2')">2</button>
+      <button onclick="insert('3')">3</button>
+      <button onclick="insert('-')">−</button>
+    </div>
+    <div>
+      <button onclick="insert('0')">0</button>
+      <button onclick="insert('.')">.</button>
+      <button onclick="calculate()">=</button>
+      <button onclick="insert('+')">+</button>
+    </div>
+    <div>
+      <button onclick="insert('sin(')">sin</button>
+      <button onclick="insert('cos(')">cos</button>
+      <button onclick="insert('tan(')">tan</button>
+      <button onclick="insert('sqrt(')">√</button>
+    </div>
+    <div>
+      <button onclick="insert('log(')">log</button>
+      <button onclick="insert('ln(')">ln</button>
+      <button onclick="insert('^')">x^y</button>
+      <button onclick="clearDisplay()">C</button>
+    </div>
   </div>
-  <canvas id="graphCanvas" width="1200" height="600"></canvas>
-
-  <footer>
-    Créateur : <strong>Yahya Lebbar</strong> — À l’infini et au-delà 🚀
-  </footer>
 
   <script>
-    function drawGraph() {
-      const canvas = document.getElementById('graphCanvas');
-      const ctx = canvas.getContext('2d');
-      const exprInput = document.getElementById('equation').value;
+    function insert(val) {
+      document.getElementById("display").value += val;
+    }
 
-      const equations = exprInput.split(",").map(e => e.trim());
+    function clearDisplay() {
+      document.getElementById("display").value = "";
+    }
 
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
+    function calculate() {
+      let expr = document.getElementById("display").value;
 
-      const width = canvas.width;
-      const height = canvas.height;
-      const scaleX = 40; // 40px = 1 unité
-      const scaleY = 40;
-      const originX = width / 2;
-      const originY = height / 2;
+      // Remplacements pour JS
+      expr = expr
+        .replace(/sin\(/g, "Math.sin(")
+        .replace(/cos\(/g, "Math.cos(")
+        .replace(/tan\(/g, "Math.tan(")
+        .replace(/log\(/g, "Math.log10(") // log base 10
+        .replace(/ln\(/g, "Math.log(")    // ln naturel
+        .replace(/sqrt\(/g, "Math.sqrt(")
+        .replace(/pi/g, "Math.PI")
+        .replace(/e/g, "Math.E")
+        .replace(/(\d+)\^(\d+)/g, "Math.pow($1,$2)");
 
-      // Axes
-      ctx.strokeStyle = "#888";
-      ctx.beginPath();
-      ctx.moveTo(0, originY);
-      ctx.lineTo(width, originY);
-      ctx.moveTo(originX, 0);
-      ctx.lineTo(originX, height);
-      ctx.stroke();
-
-      // Graduations X
-      ctx.fillStyle = "#aaa";
-      ctx.font = "12px Arial";
-      for (let i = -Math.floor(width/(2*scaleX)); i <= Math.floor(width/(2*scaleX)); i++) {
-        const px = originX + i * scaleX;
-        ctx.beginPath();
-        ctx.moveTo(px, originY - 5);
-        ctx.lineTo(px, originY + 5);
-        ctx.stroke();
-        ctx.fillText(i.toString(), px - 5, originY + 20);
+      try {
+        let result = eval(expr);
+        document.getElementById("display").value = result;
+      } catch {
+        document.getElementById("display").value = "Erreur";
       }
-
-      // Graduations Y
-      for (let j = -Math.floor(height/(2*scaleY)); j <= Math.floor(height/(2*scaleY)); j++) {
-        const py = originY - j * scaleY;
-        ctx.beginPath();
-        ctx.moveTo(originX - 5, py);
-        ctx.lineTo(originX + 5, py);
-        ctx.stroke();
-        if (j !== 0) {
-          ctx.fillText(j.toString(), originX + 10, py + 5);
-        }
-      }
-
-      // Couleurs
-      const colors = ["#00ffcc", "#ff0066", "#ffaa00", "#66ff00", "#0099ff", "#ff00ff"];
-
-      // Tracer chaque équation
-      equations.forEach((expr, idx) => {
-        ctx.strokeStyle = colors[idx % colors.length];
-        ctx.beginPath();
-        for (let px = 0; px < width; px++) {
-          const x = (px - originX) / scaleX;
-          let y;
-          try {
-            let exprJS = expr
-              .replace(/sin\(/g, "Math.sin(")
-              .replace(/cos\(/g, "Math.cos(")
-              .replace(/tan\(/g, "Math.tan(")
-              .replace(/log\(/g, "Math.log10(") // log base 10
-              .replace(/ln\(/g, "Math.log(")    // ln naturel
-              .replace(/sqrt\(/g, "Math.sqrt(")
-              .replace(/pi/g, "Math.PI")
-              .replace(/e/g, "Math.E")
-              .replace(/(\w+)\s*\^\s*(\w+)/g, "Math.pow($1,$2)");
-
-            y = eval(exprJS.replace(/x/g, `(${x})`));
-
-            // Sécurité : ignorer les valeurs infinies
-            if (!isFinite(y)) continue;
-          } catch {
-            y = NaN;
-          }
-
-          const py = originY - y * scaleY;
-          if (px === 0 || isNaN(y)) {
-            ctx.moveTo(px, py);
-          } else {
-            ctx.lineTo(px, py);
-          }
-        }
-        ctx.stroke();
-      });
     }
   </script>
 </body>
