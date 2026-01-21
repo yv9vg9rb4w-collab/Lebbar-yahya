@@ -101,7 +101,9 @@ button:active{transform:scale(0.94);}
 <button class="fn" onclick="add('log(')">log</button>
 <button class="fn" onclick="add('ln(')">ln</button>
 <button class="fn" onclick="add('π')">π</button>
-<botton class="fn" onclick="add('e')">e</botton>
+
+
+
 </div>
 </div>
 
@@ -146,7 +148,6 @@ function calc(){
         e = e.replace(/tan/g,"Math.tan");
         e = e.replace(/log/g,"Math.log10");
         e = e.replace(/ln/g,"Math.log");
-        e = e.remplace(/e/g,"Math.E");
 
         let result = Function("return "+e)();
         screen.innerText = result;
