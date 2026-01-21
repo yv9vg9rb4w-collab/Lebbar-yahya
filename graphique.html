@@ -2,135 +2,121 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8">
-  <title>Calculatrice graphique CalcPro</title>
+  <title>CalcPro - Calculatrice graphique</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
     body {
-      background: #121212;
+      background-color: #121212;
       color: white;
-      font-family: Arial;
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 20px;
       text-align: center;
     }
-    input, button {
+    h1 {
+      color: #00ffcc;
+    }
+    #controls {
+      margin: 20px 0;
+    }
+    input {
       padding: 10px;
       font-size: 16px;
-      margin: 5px;
+      width: 300px;
+      border-radius: 6px;
+      border: none;
+      outline: none;
+    }
+    button {
+      padding: 10px 20px;
+      margin-left: 10px;
+      font-size: 16px;
+      border-radius: 6px;
+      border: none;
+      background-color: #00ffcc;
+      color: #121212;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+    button:hover {
+      background-color: #00ccaa;
     }
     canvas {
-      background: #fff;
-      border: 1px solid #ccc;
+      background: #1e1e1e;
+      border-radius: 10px;
+      box-shadow: 0 0 10px #00ffcc55;
       margin-top: 20px;
+      width: 100%;
+      max-width: 900px; /* grand format PC */
+      height: 500px;
     }
   </style>
 </head>
 <body>
-  <h1>📈 Calculatrice graphique CalcPro</h1>
+  <h1>📈 Calculatrice graphique</h1>
+  <div id="controls">
+    <input type="text" id="equation" placeholder="Exemple : sin(x) ou x*x">
+    <button onclick="drawGraph()">Tracer</button>
+  </div>
+  <canvas id="graphCanvas"></canvas>
 
-  <input type="text" id="equation" placeholder="Ex: x^2 ou sin(x)">
-  <input type="number" id="xvalue" placeholder="Valeur de x ?" step="any">
-  <button onclick="draw()">Tracer</button>
+  <script>
+    function drawGraph() {
+      const canvas = document.getElementById('graphCanvas');
+      const ctx = canvas.getContext('2d');
+      const expr = document.getElementById('equation').value;
 
-  <p id="result"></p>
-  <canvas id="graph" width="600" height="400"></canvas>
-<script>
-  function parseExpr(expr, x) {
-    expr = expr.replace(/\^/g, "**");
-    expr = expr.replace(/sin/g, "Math.sin")
-               .replace(/cos/g, "Math.cos")
-               .replace(/tan/g, "Math.tan");
-    return eval(expr.replace(/x/g, `(${x})`));
-  }
+      // Nettoyer le canvas
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-  function draw() {
-    const canvas = document.getElementById('graph');
-    const ctx = canvas.getContext('2d');
-    const expr = document.getElementById('equation').value;
-    const xval = parseFloat(document.getElementById('xvalue').value);
-    const resultBox = document.getElementById('result');
+      // Dimensions
+      const width = canvas.width;
+      const height = canvas.height;
+      const scaleX = 40; // pixels par unité en X
+      const scaleY = 40; // pixels par unité en Y
+      const originX = width / 2;
+      const originY = height / 2;
 
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
+      // Axes
+      ctx.strokeStyle = "#888";
+      ctx.beginPath();
+      ctx.moveTo(0, originY);
+      ctx.lineTo(width, originY);
+      ctx.moveTo(originX, 0);
+      ctx.lineTo(originX, height);
+      ctx.stroke();
 
-    const scale = 30;
-    const originX = canvas.width / 2;
-    const originY = canvas.height / 2;
+      // Tracer la fonction
+      ctx.strokeStyle = "#00ffcc";
+      ctx.beginPath();
+      for (let px = 0; px < width; px++) {
+        const x = (px - originX) / scaleX;
+        let y;
+        try {
+          // Remplacer les fonctions mathématiques
+          let exprJS = expr
+            .replace(/sin\(/g, "Math.sin(")
+            .replace(/cos\(/g, "Math.cos(")
+            .replace(/tan\(/g, "Math.tan(")
+            .replace(/log\(/g, "Math.log10(")
+            .replace(/ln\(/g, "Math.log(")
+            .replace(/sqrt\(/g, "Math.sqrt(")
+            .replace(/pi/g, "Math.PI")
+            .replace(/e/g, "Math.E");
 
-    // Axes
-    ctx.strokeStyle = "#888";
-    ctx.beginPath();
-    ctx.moveTo(0, originY);
-    ctx.lineTo(canvas.width, originY);
-    ctx.moveTo(originX, 0);
-    ctx.lineTo(originX, canvas.height);
-    ctx.stroke();
-
-    // Nombres sur les axes
-    ctx.fillStyle = "#000";
-    ctx.font = "12px Arial";
-    for (let i = -10; i <= 10; i++) {
-      if (i !== 0) {
-        ctx.fillText(i, originX + i * scale - 5, originY + 15); // X
-        ctx.fillText(i, originX + 5, originY - i * scale + 5); // Y
-      }
-    }
-
-    // Courbe en noir
-    ctx.strokeStyle = "#000";
-    ctx.beginPath();
-    let started = false;
-    for (let px = 0; px < canvas.width; px++) {
-      let x = (px - originX) / scale;
-      let y;
-      try {
-        y = parseExpr(expr, x);
-      } catch {
-        y = NaN;
-      }
-      if (!isNaN(y) && Math.abs(y) < 100) {
-        let py = originY - y * scale;
-        if (!started) {
+          y = eval(exprJS);
+        } catch {
+          y = NaN;
+        }
+        const py = originY - y * scaleY;
+        if (px === 0) {
           ctx.moveTo(px, py);
-          started = true;
         } else {
           ctx.lineTo(px, py);
         }
-      } else {
-        started = false; // coupe la ligne si y est invalide
       }
+      ctx.stroke();
     }
-    ctx.stroke();
-
-    // Résultat pour x choisi
-    if (!isNaN(xval)) {
-      try {
-        const yval = parseExpr(expr, xval);
-        resultBox.innerHTML = `📍 Résultat : ${yval.toFixed(4)}`;
-      } catch {
-        resultBox.innerHTML = `❌ Erreur dans l'expression`;
-      }
-    } else {
-      resultBox.innerHTML = `ℹ️ Tape une valeur de x pour calculer`;
-    }
-  }
-
-  /* Style par défaut (mobile) */
-.graph-calc {
-  width: 100%;
-  max-width: 360px;   /* limite comme un téléphone */
-  margin: 20px auto;
-  background: #fff;
-  border-radius: 12px;
-  box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-  padding: 20px;
-}
-
-/* Version PC (grand écran) */
-@media (min-width: 768px) {
-  .graph-calc {
-    max-width: 900px;   /* beaucoup plus large */
-    height: 600px;      /* espace pour le graphe */
-  }
-}
-
-</script>
+  </script>
 </body>
 </html>
-
