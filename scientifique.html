@@ -52,7 +52,7 @@
 <body>
   <h1>📐 Calculatrice scientifique améliorée</h1>
   <div id="controls">
-    <input type="text" id="equation" placeholder="Exemple : x^2, sin(x), ln(x), log(x)">
+    <input type="text" id="equation" placeholder="Exemple : x^2, sin(x), cos(x), tan(x), log(x), ln(x)">
     <button onclick="drawGraph()">Tracer</button>
   </div>
   <canvas id="graphCanvas" width="1200" height="600"></canvas>
@@ -73,8 +73,8 @@
 
       const width = canvas.width;
       const height = canvas.height;
-      const scaleX = 30;
-      const scaleY = 30;
+      const scaleX = 40; // 40px = 1 unité
+      const scaleY = 40;
       const originX = width / 2;
       const originY = height / 2;
 
@@ -126,14 +126,17 @@
               .replace(/sin\(/g, "Math.sin(")
               .replace(/cos\(/g, "Math.cos(")
               .replace(/tan\(/g, "Math.tan(")
-              .replace(/log\(/g, "Math.log10(")
-              .replace(/ln\(/g, "Math.log(")
+              .replace(/log\(/g, "Math.log10(") // log base 10
+              .replace(/ln\(/g, "Math.log(")    // ln naturel
               .replace(/sqrt\(/g, "Math.sqrt(")
               .replace(/pi/g, "Math.PI")
               .replace(/e/g, "Math.E")
               .replace(/(\w+)\s*\^\s*(\w+)/g, "Math.pow($1,$2)");
 
             y = eval(exprJS.replace(/x/g, `(${x})`));
+
+            // Sécurité : ignorer les valeurs infinies
+            if (!isFinite(y)) continue;
           } catch {
             y = NaN;
           }
