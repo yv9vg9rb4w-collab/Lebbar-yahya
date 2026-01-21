@@ -2,19 +2,18 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8">
-  <title>Calculatrice Lebbar</title>
+  <title>Calculatrice scientifique Lebbar</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
     body {
       background: #111;
       color: #fff;
-      font-family: 'Arial', sans-serif;
+      font-family: Arial, sans-serif;
       text-align: center;
       padding: 20px;
     }
     h1 {
       color: #00ffcc;
-      margin-bottom: 10px;
     }
     #calculator {
       display: inline-block;
@@ -25,7 +24,7 @@
     }
     #display {
       width: 100%;
-      font-size: 20px;
+      font-size: 22px;
       padding: 10px;
       margin-bottom: 15px;
       border-radius: 8px;
@@ -57,7 +56,7 @@
   </style>
 </head>
 <body>
-  <h1>🧠 Calculatrice CalcPro</h1>
+  <h1>🧠 Calculatrice scientifique Lebbar</h1>
   <div id="calculator">
     <input type="text" id="display" readonly>
 
@@ -89,10 +88,8 @@
       <button onclick="insert('sin(')">sin</button>
       <button onclick="insert('cos(')">cos</button>
       <button onclick="insert('tan(')">tan</button>
-     <button onclick="insert('√()')">√</button>
-
-
-  </div>
+      <button onclick="insert('√(')">√</button>
+    </div>
     <div class="row">
       <button onclick="insert('log(')">log</button>
       <button onclick="insert('ln(')">ln</button>
@@ -102,8 +99,6 @@
   </div>
 
   <script>
-    let lastAnswer = "";
-
     function insert(val) {
       document.getElementById("display").value += val;
     }
@@ -115,43 +110,27 @@
     function calculate() {
       let expr = document.getElementById("display").value;
 
+      // Traduction des symboles en fonctions JS
       expr = expr
-  .replace(/√\(/g, "Math.sqrt(")   // symbole √ devient Math.sqrt
-  .replace(/sin\(/g, "Math.sin(")
-  .replace(/cos\(/g, "Math.cos(")
-  .replace(/tan\(/g, "Math.tan(")
-  .replace(/log\(/g, "Math.log10(")
-  .replace(/ln\(/g, "Math.log(")
-  .replace(/pi/g, "Math.PI")
-  .replace(/e/g, "Math.E")
-  .replace(/(\d+)\^(\d+)/g, "Math.pow($1,$2)");
-      function calculate() {
-  let expr = document.getElementById("display").value;
+        .replace(/√\(/g, "Math.sqrt(")
+        .replace(/sin\(/g, "Math.sin(")
+        .replace(/cos\(/g, "Math.cos(")
+        .replace(/tan\(/g, "Math.tan(")
+        .replace(/log\(/g, "Math.log10(")
+        .replace(/ln\(/g, "Math.log(")
+        .replace(/pi/g, "Math.PI")
+        .replace(/e/g, "Math.E")
+        .replace(/(\d+)\^(\d+)/g, "Math.pow($1,$2)");
 
-  // Traduction des symboles
-  expr = expr
-    .replace(/√\(/g, "Math.sqrt(")
-    .replace(/sin\(/g, "Math.sin(")
-    .replace(/cos\(/g, "Math.cos(")
-    .replace(/tan\(/g, "Math.tan(")
-    .replace(/log\(/g, "Math.log10(")
-    .replace(/ln\(/g, "Math.log(")
-    .replace(/pi/g, "Math.PI")
-    .replace(/e/g, "Math.E")
-    .replace(/(\d+)\^(\d+)/g, "Math.pow($1,$2)");
+      // Vérifier et compléter les parenthèses si besoin
+      let open = (expr.match(/\(/g) || []).length;
+      let close = (expr.match(/\)/g) || []).length;
+      if (open > close) {
+        expr += ")"; // ajoute la parenthèse manquante
+      }
 
-  try {
-    // Vérifier si les parenthèses sont équilibrées
-    let open = (expr.match(/\(/g) || []).length;
-    let close = (expr.match(/\)/g) || []).length;
-    if (open !== close) {
-      document.getElementById("display").value = "Erreur: parenthèse manquante";
-      return;
-    }
-
-    try {
+      try {
         let result = eval(expr);
-        lastAnswer = result;
         document.getElementById("display").value = result;
       } catch {
         document.getElementById("display").value = "Erreur";
