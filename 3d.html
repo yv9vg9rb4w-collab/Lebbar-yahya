@@ -5,14 +5,16 @@
 <title>Calculatrice 3D Scientifique - CalcPro</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <style>
-  body { background:#121212; color:white; font-family:Arial,sans-serif; margin:0; overflow:hidden; display:flex; flex-direction:column; align-items:center; }
-  h1 { color:#00ffcc; margin:15px 0; text-align:center; }
-  #coords { color:#00ffcc; margin:10px; font-size:14px; }
-  .toolbar { display:flex; gap:10px; margin-bottom:10px; flex-wrap:wrap; justify-content:center; }
-  .toolbar button { padding:10px 16px; border:none; border-radius:8px; background:#2563eb; color:white; font-size:14px; cursor:pointer; transition:0.2s; }
-  .toolbar button:hover { transform:scale(1.05); }
-  footer { margin-top:5px; text-align:center; font-size:14px; color:#aaa; }
-  #container { width:100%; height:500px; border-radius:12px; }
+body { background:#121212; color:white; font-family:Arial,sans-serif; margin:0; display:flex; flex-direction:column; align-items:center; }
+h1 { color:#00ffcc; margin:15px 0; text-align:center; }
+#coords { color:#00ffcc; margin:10px; font-size:14px; }
+.toolbar { display:flex; gap:10px; margin-bottom:10px; flex-wrap:wrap; justify-content:center; }
+.toolbar button { padding:10px 16px; border:none; border-radius:8px; background:#2563eb; color:white; font-size:14px; cursor:pointer; transition:0.2s; }
+.toolbar button:hover { transform:scale(1.05); }
+#inputPanel { display:flex; gap:5px; margin-bottom:10px; flex-wrap:wrap; justify-content:center; }
+#inputPanel input { width:60px; padding:5px; border-radius:5px; border:none; text-align:center; }
+#container { width:100%; height:500px; border-radius:12px; }
+footer { margin-top:5px; text-align:center; font-size:14px; color:#aaa; }
 </style>
 </head>
 <body>
@@ -25,6 +27,13 @@
   <button id="clearBtn">Effacer</button>
 </div>
 
+<div id="inputPanel">
+  <input id="xInput" type="number" placeholder="X">
+  <input id="yInput" type="number" placeholder="Y">
+  <input id="zInput" type="number" placeholder="Z">
+  <button id="placeBtn">Placer</button>
+</div>
+
 <div id="coords">Coordonnées : x=0, y=0, z=0</div>
 <div id="container"></div>
 <footer>Développeur: <strong>Lebbar Yahya</strong></footer>
@@ -33,6 +42,7 @@
 <script src="https://cdn.jsdelivr.net/npm/three@0.152.2/examples/js/controls/OrbitControls.js"></script>
 
 <script>
+// === Setup ===
 const container = document.getElementById('container');
 const scene = new THREE.Scene();
 scene.background = new THREE.Color(0x1e1e1e);
@@ -47,25 +57,20 @@ container.appendChild(renderer.domElement);
 const controls = new THREE.OrbitControls(camera, renderer.domElement);
 controls.enableDamping = true;
 
-// Axes et grille
+// === Axes et Grille ===
 scene.add(new THREE.AxesHelper(10));
 scene.add(new THREE.GridHelper(20,20,0x444444,0x888888));
 
-// Plan semi-transparent cliquable
-const planeGeo = new THREE.PlaneGeometry(20,20);
-const planeMat = new THREE.MeshBasicMaterial({color:0x5555ff, opacity:0.1, transparent:true});
-const plane = new THREE.Mesh(planeGeo, planeMat);
-plane.rotateX(-Math.PI/2);
-scene.add(plane);
-
+// === Variables ===
 let points = [];
 let segments = [];
-
-const coords = document.getElementById("coords");
+let lastPoint = null;
 let addPointMode = false;
 let connectMode = false;
-let lastPoint = null;
 
+const coordsDisplay = document.getElementById('coords');
+
+// === Boutons ===
 document.getElementById("addPointBtn").onclick = ()=>{
   addPointMode = !addPointMode;
   connectMode = false;
@@ -88,63 +93,46 @@ document.getElementById("clearBtn").onclick = ()=>{
   points = [];
   segments = [];
   lastPoint = null;
+  coordsDisplay.innerText = "Coordonnées : x=0, y=0, z=0";
 };
 
-// Fonction pour créer un point
-function addPoint(x,y,z){
+// === Fonctions ===
+function createPoint(x,y,z){
   const geo = new THREE.SphereGeometry(0.3,16,16);
   const mat = new THREE.MeshBasicMaterial({color:0xffeb3b});
   const sphere = new THREE.Mesh(geo, mat);
   sphere.position.set(x,y,z);
   scene.add(sphere);
   points.push(sphere);
+  coordsDisplay.innerText = `Coordonnées : x=${x}, y=${y}, z=${z}`;
+  return sphere;
 }
 
-// Fonction pour créer un segment entre deux points
-function addSegment(p1,p2){
+function createSegment(p1,p2){
   const mat = new THREE.LineBasicMaterial({color:0x03a9f4});
-  const pointsLine = [];
-  pointsLine.push(p1.position.clone());
-  pointsLine.push(p2.position.clone());
-  const geo = new THREE.BufferGeometry().setFromPoints(pointsLine);
-  const line = new THREE.Line(geo, mat);
+  const geometry = new THREE.BufferGeometry().setFromPoints([p1.position.clone(), p2.position.clone()]);
+  const line = new THREE.Line(geometry, mat);
   scene.add(line);
   segments.push(line);
 }
 
-// Click sur le plan
-renderer.domElement.addEventListener('click', (event)=>{
-  const rect = renderer.domElement.getBoundingClientRect();
-  const mouse = new THREE.Vector2(
-    ((event.clientX - rect.left)/rect.width)*2 -1,
-    -((event.clientY - rect.top)/rect.height)*2 +1
-  );
+// === Placer point depuis inputs ===
+document.getElementById("placeBtn").onclick = ()=>{
+  const x = parseFloat(document.getElementById("xInput").value) || 0;
+  const y = parseFloat(document.getElementById("yInput").value) || 0;
+  const z = parseFloat(document.getElementById("zInput").value) || 0;
 
-  const raycaster = new THREE.Raycaster();
-  raycaster.setFromCamera(mouse,camera);
-  const intersects = raycaster.intersectObject(plane);
-  if(intersects.length>0){
-    const p = intersects[0].point;
+  const point = createPoint(x,y,z);
 
-    if(addPointMode){
-      addPoint(p.x,0,p.z);
-      coords.innerText = `Coordonnées : x=${p.x.toFixed(2)}, y=0, z=${p.z.toFixed(2)}`;
+  if(connectMode){
+    if(lastPoint){
+      createSegment(lastPoint, point);
     }
-
-    if(connectMode){
-      if(!lastPoint){
-        lastPoint = {x:p.x, y:0, z:p.z};
-        addPoint(p.x,0,p.z);
-      } else {
-        const newPoint = {x:p.x, y:0, z:p.z};
-        addPoint(newPoint.x,0,newPoint.z);
-        addSegment({position:new THREE.Vector3(lastPoint.x,lastPoint.y,lastPoint.z)}, {position:new THREE.Vector3(newPoint.x,newPoint.y,newPoint.z)});
-        lastPoint = newPoint;
-      }
-    }
+    lastPoint = point;
   }
-});
+};
 
+// === Animation ===
 function animate(){
   requestAnimationFrame(animate);
   controls.update();
