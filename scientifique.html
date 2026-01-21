@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
-<title>Lebbar Scientific Calculator</title>
+<title>Lebbar Scientific</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <style>
@@ -27,7 +27,6 @@ body{
     color:#00ffd5;
     font-weight:bold;
     margin-bottom:8px;
-    letter-spacing:1px;
 }
 .screen{
     height:70px;
@@ -50,7 +49,6 @@ button{
     border:none;
     border-radius:14px;
     font-size:17px;
-    cursor:pointer;
     background:#1e1e1e;
     color:white;
 }
@@ -65,61 +63,60 @@ button:active{transform:scale(0.94);}
 <body>
 
 <div class="calc">
-    <div class="brand">LEBBAR • SCIENTIFIC</div>
-    <div class="screen" id="screen">0</div>
+<div class="brand">LEBBAR • SCIENTIFIC</div>
+<div class="screen" id="screen">0</div>
 
-    <div class="keys">
-        <button class="ac" onclick="clearAll()">AC</button>
-        <button class="op" onclick="del()">⌫</button>
-        <button class="op" onclick="add('(')">(</button>
-        <button class="op" onclick="add(')')">)</button>
+<div class="keys">
+<button class="ac" onclick="clearAll()">AC</button>
+<button class="op" onclick="del()">⌫</button>
+<button class="op" onclick="add('(')">(</button>
+<button class="op" onclick="add(')')">)</button>
 
-        <button onclick="add('7')">7</button>
-        <button onclick="add('8')">8</button>
-        <button onclick="add('9')">9</button>
-        <button class="op" onclick="add('/')">÷</button>
+<button onclick="add('7')">7</button>
+<button onclick="add('8')">8</button>
+<button onclick="add('9')">9</button>
+<button class="op" onclick="add('/')">÷</button>
 
-        <button onclick="add('4')">4</button>
-        <button onclick="add('5')">5</button>
-        <button onclick="add('6')">6</button>
-        <button class="op" onclick="add('*')">×</button>
+<button onclick="add('4')">4</button>
+<button onclick="add('5')">5</button>
+<button onclick="add('6')">6</button>
+<button class="op" onclick="add('*')">×</button>
 
-        <button onclick="add('1')">1</button>
-        <button onclick="add('2')">2</button>
-        <button onclick="add('3')">3</button>
-        <button class="op" onclick="add('-')">−</button>
+<button onclick="add('1')">1</button>
+<button onclick="add('2')">2</button>
+<button onclick="add('3')">3</button>
+<button class="op" onclick="add('-')">−</button>
 
-        <button onclick="add('0')">0</button>
-        <button onclick="add('.')">.</button>
-        <button class="eq" onclick="calc()">=</button>
-        <button class="op" onclick="add('+')">+</button>
+<button onclick="add('0')">0</button>
+<button onclick="add('.')">.</button>
+<button class="eq" onclick="calc()">=</button>
+<button class="op" onclick="add('+')">+</button>
 
-        <button class="fn" onclick="add('√(')">√</button>
-        <button class="fn" onclick="add('^')">xʸ</button>
-        <button class="fn" onclick="add('sin(')">sin</button>
-        <button class="fn" onclick="add('cos(')">cos</button>
+<button class="fn" onclick="add('√')">√</button>
+<button class="fn" onclick="add('^')">xʸ</button>
+<button class="fn" onclick="add('sin(')">sin</button>
+<button class="fn" onclick="add('cos(')">cos</button>
 
-        <button class="fn" onclick="add('tan(')">tan</button>
-        <button class="fn" onclick="add('log(')">log</button>
-        <button class="fn" onclick="add('ln(')">ln</button>
-        <button class="fn" onclick="add('π')">π</button>
-    </div>
+<button class="fn" onclick="add('tan(')">tan</button>
+<button class="fn" onclick="add('log(')">log</button>
+<button class="fn" onclick="add('ln(')">ln</button>
+<button class="fn" onclick="add('π')">π</button>
+</div>
 </div>
 
 <script>
 let screen = document.getElementById("screen");
 let expr = "";
 
-/* AFFICHAGE */
 function add(v){
-    if(screen.innerText === "0") expr = "";
+    if(screen.innerText==="0") expr="";
     expr += v;
     screen.innerText = expr;
 }
 
 function clearAll(){
-    expr = "";
-    screen.innerText = "0";
+    expr="";
+    screen.innerText="0";
 }
 
 function del(){
@@ -127,15 +124,20 @@ function del(){
     screen.innerText = expr || "0";
 }
 
-/* CALCUL */
 function calc(){
     try{
         let e = expr;
 
-        // symboles → JavaScript
-        e = e.replace(/÷/g,"/");
-        e = e.replace(/×/g,"*");
+        // multiplications automatiques
+        e = e.replace(/(\d)(π)/g,"$1*Math.PI");
+        e = e.replace(/(\d)\(/g,"$1*(");
+        e = e.replace(/\)(\d)/g,")*$1");
+
+        // racine sans parenthèses √9 → sqrt(9)
+        e = e.replace(/√(\d+(\.\d+)?)/g,"Math.sqrt($1)");
         e = e.replace(/√/g,"Math.sqrt");
+
+        // symboles
         e = e.replace(/π/g,"Math.PI");
         e = e.replace(/\^/g,"**");
         e = e.replace(/sin/g,"Math.sin");
@@ -144,12 +146,12 @@ function calc(){
         e = e.replace(/log/g,"Math.log10");
         e = e.replace(/ln/g,"Math.log");
 
-        let result = Function("return " + e)();
+        let result = Function("return "+e)();
         screen.innerText = result;
         expr = result.toString();
     }catch{
-        screen.innerText = "Erreur";
-        expr = "";
+        screen.innerText="Erreur";
+        expr="";
     }
 }
 </script>
