@@ -1,141 +1,157 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8">
-  <title>Calculatrice scientifique Lebbar</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <style>
-    body {
-      background: #111;
-      color: #fff;
-      font-family: Arial, sans-serif;
-      text-align: center;
-      padding: 20px;
-    }
-    h1 {
-      color: #00ffcc;
-    }
-    #calculator {
-      display: inline-block;
-      background: #222;
-      padding: 20px;
-      border-radius: 12px;
-      box-shadow: 0 0 20px #00ffcc55;
-    }
-    #display {
-      width: 100%;
-      font-size: 22px;
-      padding: 10px;
-      margin-bottom: 15px;
-      border-radius: 8px;
-      border: none;
-      text-align: right;
-      background: #000;
-      color: #0f0;
-    }
-    .row {
-      display: flex;
-      justify-content: center;
-      margin-bottom: 10px;
-    }
-    button {
-      width: 70px;
-      height: 50px;
-      margin: 5px;
-      font-size: 16px;
-      border-radius: 8px;
-      border: none;
-      background: #00ffcc;
-      color: #000;
-      cursor: pointer;
-      transition: 0.2s;
-    }
-    button:hover {
-      background: #00ccaa;
-    }
-  </style>
+<meta charset="UTF-8">
+<title>Lebbar Scientific Calculator</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+body{
+    margin:0;
+    height:100vh;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    background:radial-gradient(circle at top,#1e3c72,#0f2027);
+    font-family:Arial, sans-serif;
+}
+.calc{
+    width:360px;
+    background:#0a0a0a;
+    border-radius:22px;
+    padding:15px;
+    box-shadow:0 30px 60px rgba(0,0,0,.7);
+}
+.brand{
+    text-align:center;
+    color:#00ffd5;
+    font-weight:bold;
+    margin-bottom:8px;
+    letter-spacing:1px;
+}
+.screen{
+    height:70px;
+    background:#000;
+    color:#00ff88;
+    font-size:26px;
+    text-align:right;
+    padding:15px;
+    border-radius:14px;
+    overflow-x:auto;
+}
+.keys{
+    margin-top:12px;
+    display:grid;
+    grid-template-columns:repeat(4,1fr);
+    gap:10px;
+}
+button{
+    height:55px;
+    border:none;
+    border-radius:14px;
+    font-size:17px;
+    cursor:pointer;
+    background:#1e1e1e;
+    color:white;
+}
+button:active{
+    transform:scale(0.94);
+}
+.op{background:#ff9800;}
+.eq{background:#00c853;}
+.fn{background:#3949ab;}
+.ac{background:#e53935;}
+</style>
 </head>
+
 <body>
-  <h1>🧠 Calculatrice scientifique Lebbar</h1>
-  <div id="calculator">
-    <input type="text" id="display" readonly>
 
-    <div class="row">
-      <button onclick="insert('7')">7</button>
-      <button onclick="insert('8')">8</button>
-      <button onclick="insert('9')">9</button>
-      <button onclick="insert('/')">÷</button>
-    </div>
-    <div class="row">
-      <button onclick="insert('4')">4</button>
-      <button onclick="insert('5')">5</button>
-      <button onclick="insert('6')">6</button>
-      <button onclick="insert('*')">×</button>
-    </div>
-    <div class="row">
-      <button onclick="insert('1')">1</button>
-      <button onclick="insert('2')">2</button>
-      <button onclick="insert('3')">3</button>
-      <button onclick="insert('-')">−</button>
-    </div>
-    <div class="row">
-      <button onclick="insert('0')">0</button>
-      <button onclick="insert('.')">.</button>
-      <button onclick="calculate()">=</button>
-      <button onclick="insert('+')">+</button>
-    </div>
-    <div class="row">
-      <button onclick="insert('sin(')">sin</button>
-      <button onclick="insert('cos(')">cos</button>
-      <button onclick="insert('tan(')">tan</button>
-      <button onclick="insert('√(')">√</button>
-    </div>
-    <div class="row">
-      <button onclick="insert('log(')">log</button>
-      <button onclick="insert('ln(')">ln</button>
-      <button onclick="insert('^')">x^y</button>
-      <button onclick="clearDisplay()">C</button>
-    </div>
-  </div>
+<div class="calc">
+    <div class="brand">LEBBAR • SCIENTIFIC</div>
+    <div class="screen" id="screen">0</div>
 
-  <script>
-    function insert(val) {
-      document.getElementById("display").value += val;
+    <div class="keys">
+        <button class="ac" onclick="clearAll()">AC</button>
+        <button class="op" onclick="del()">⌫</button>
+        <button class="op" onclick="add('(')">(</button>
+        <button class="op" onclick="add(')')">)</button>
+
+        <button onclick="add('7')">7</button>
+        <button onclick="add('8')">8</button>
+        <button onclick="add('9')">9</button>
+        <button class="op" onclick="add('/')">÷</button>
+
+        <button onclick="add('4')">4</button>
+        <button onclick="add('5')">5</button>
+        <button onclick="add('6')">6</button>
+        <button class="op" onclick="add('*')">×</button>
+
+        <button onclick="add('1')">1</button>
+        <button onclick="add('2')">2</button>
+        <button onclick="add('3')">3</button>
+        <button class="op" onclick="add('-')">−</button>
+
+        <button onclick="add('0')">0</button>
+        <button onclick="add('.')">.</button>
+        <button class="eq" onclick="calc()">=</button>
+        <button class="op" onclick="add('+')">+</button>
+
+        <button class="fn" onclick="add('sqrt(')">√</button>
+        <button class="fn" onclick="add('^')">xʸ</button>
+        <button class="fn" onclick="add('sin(')">sin</button>
+        <button class="fn" onclick="add('cos(')">cos</button>
+
+        <button class="fn" onclick="add('tan(')">tan</button>
+        <button class="fn" onclick="add('log(')">log</button>
+        <button class="fn" onclick="add('ln(')">ln</button>
+        <button class="fn" onclick="add('pi')">π</button>
+    </div>
+</div>
+
+<script>
+let screen=document.getElementById("screen");
+let expr="";
+
+function add(v){
+    if(screen.innerText==="0") expr="";
+    expr+=v;
+    screen.innerText=expr;
+}
+
+function clearAll(){
+    expr="";
+    screen.innerText="0";
+}
+
+function del(){
+    expr=expr.slice(0,-1);
+    screen.innerText=expr||"0";
+}
+
+function calc(){
+    try{
+        let e=expr;
+
+        e=e.replace(/÷/g,"/");
+        e=e.replace(/×/g,"*");
+        e=e.replace(/\^/g,"**");
+        e=e.replace(/sqrt/g,"Math.sqrt");
+        e=e.replace(/sin/g,"Math.sin");
+        e=e.replace(/cos/g,"Math.cos");
+        e=e.replace(/tan/g,"Math.tan");
+        e=e.replace(/log/g,"Math.log10");
+        e=e.replace(/ln/g,"Math.log");
+        e=e.replace(/pi/g,"Math.PI");
+
+        let result=Function("return "+e)();
+        screen.innerText=result;
+        expr=result.toString();
+    }catch{
+        screen.innerText="Erreur";
+        expr="";
     }
+}
+</script>
 
-    function clearDisplay() {
-      document.getElementById("display").value = "";
-    }
-
-    function calculate() {
-      let expr = document.getElementById("display").value;
-
-      // Traduction des symboles en fonctions JS
-      expr = expr
-        .replace(/√\(/g, "Math.sqrt(")
-        .replace(/sin\(/g, "Math.sin(")
-        .replace(/cos\(/g, "Math.cos(")
-        .replace(/tan\(/g, "Math.tan(")
-        .replace(/log\(/g, "Math.log10(")
-        .replace(/ln\(/g, "Math.log(")
-        .replace(/pi/g, "Math.PI")
-        .replace(/e/g, "Math.E")
-        .replace(/(\d+)\^(\d+)/g, "Math.pow($1,$2)");
-
-      // Vérifier et compléter les parenthèses si besoin
-      let open = (expr.match(/\(/g) || []).length;
-      let close = (expr.match(/\)/g) || []).length;
-      if (open > close) {
-        expr += ")"; // ajoute la parenthèse manquante
-      }
-
-      try {
-        let result = eval(expr);
-        document.getElementById("display").value = result;
-      } catch {
-        document.getElementById("display").value = "Erreur";
-      }
-    }
-  </script>
 </body>
 </html>
