@@ -96,7 +96,8 @@ scene.add(new THREE.AmbientLight(0xffffff,0.8));
 const axes = new THREE.AxesHelper(20);
 axes.material.linewidth = 4;
 scene.add(axes);
-scene.add(new THREE.GridHelper(20,20));
+const grid = new THREE.GridHelper(20, 20, 0x00ffcc, 0x003333);
+scene.add(grid);
 
 // POINTS
 const info = document.getElementById("info");
