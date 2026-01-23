@@ -1,33 +1,100 @@
 <!DOCTYPE html>
-<html>
+<html lang="fr">
 <head>
-  <title>Cube 3D</title>
-  <style>body { margin: 0; }</style>
+  <meta charset="UTF-8">
+  <title>CalcPro - Calculatrice 3D</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body {
+      margin: 0;
+      background-color: #121212;
+      color: white;
+      font-family: Arial, sans-serif;
+    }
+    h1 {
+      text-align: center;
+      color: #00ffcc;
+      padding: 20px;
+    }
+    canvas {
+      display: block;
+    }
+  </style>
 </head>
 <body>
+  <h1>🧭 Calculatrice 3D</h1>
+
+  <!-- Import de Three.js et OrbitControls -->
   <script src="https://cdn.jsdelivr.net/npm/three@0.152.0/build/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.152.0/examples/js/controls/OrbitControls.js"></script>
+
   <script>
+    // Création de la scène
     const scene = new THREE.Scene();
-    const camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 1000);
-    const renderer = new THREE.WebGLRenderer();
+
+    // Caméra
+    const camera = new THREE.PerspectiveCamera(
+      75, window.innerWidth / window.innerHeight, 0.1, 1000
+    );
+    camera.position.set(3, 3, 5);
+
+    // Rendu
+    const renderer = new THREE.WebGLRenderer({ antialias: true });
     renderer.setSize(window.innerWidth, window.innerHeight);
     document.body.appendChild(renderer.domElement);
 
-    // Cube
-    const geometry = new THREE.BoxGeometry();
-    const material = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
-    const cube = new THREE.Mesh(geometry, material);
+    // Contrôles souris
+    const controls = new THREE.OrbitControls(camera, renderer.domElement);
+
+    // Lumière
+    const light = new THREE.PointLight(0xffffff, 1);
+    light.position.set(5, 5, 5);
+    scene.add(light);
+
+    const ambient = new THREE.AmbientLight(0x404040); // lumière douce
+    scene.add(ambient);
+
+    // Cube vert
+    const cubeGeometry = new THREE.BoxGeometry(1, 1, 1);
+    const cubeMaterial = new THREE.MeshPhongMaterial({ color: 0x00ff00 });
+    const cube = new THREE.Mesh(cubeGeometry, cubeMaterial);
+    cube.position.set(-2, 0.5, 0);
     scene.add(cube);
 
-    camera.position.z = 5;
+    // Sphère bleue
+    const sphereGeometry = new THREE.SphereGeometry(0.7, 32, 32);
+    const sphereMaterial = new THREE.MeshPhongMaterial({ color: 0x0000ff });
+    const sphere = new THREE.Mesh(sphereGeometry, sphereMaterial);
+    sphere.position.set(2, 0.7, 0);
+    scene.add(sphere);
 
+    // Plan gris (sol)
+    const planeGeometry = new THREE.PlaneGeometry(20, 20);
+    const planeMaterial = new THREE.MeshPhongMaterial({ color: 0x555555, side: THREE.DoubleSide });
+    const plane = new THREE.Mesh(planeGeometry, planeMaterial);
+    plane.rotation.x = Math.PI / 2;
+    scene.add(plane);
+
+    // Animation
     function animate() {
       requestAnimationFrame(animate);
+
       cube.rotation.x += 0.01;
       cube.rotation.y += 0.01;
+
+      sphere.rotation.y += 0.02;
+
+      controls.update();
       renderer.render(scene, camera);
     }
     animate();
+
+    // Ajuster la taille si la fenêtre change
+    window.addEventListener('resize', () => {
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+    });
   </script>
 </body>
 </html>
