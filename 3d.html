@@ -3,124 +3,174 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CalcPro - Neural Engine</title>
+    <title>CalcPro - Symbolic OS</title>
     <style>
-        body { margin: 0; background: #000; color: #00ffcc; font-family: 'Courier New', monospace; overflow: hidden; }
-        canvas { display: block; }
-        
-        /* Interface Pro */
-        #hud {
-            position: absolute; top: 20px; left: 20px;
-            padding: 15px; border-left: 2px solid #00ffcc;
-            background: rgba(0, 20, 20, 0.4); pointer-events: none;
+        :root {
+            --neon-blue: #00d2ff;
+            --neon-purple: #9d50bb;
+            --glass: rgba(255, 255, 255, 0.05);
+            --border: rgba(255, 255, 255, 0.1);
         }
-        
-        /* Bouton Retour Stylé */
-        .back-btn {
-            position: absolute; bottom: 30px; left: 30px;
-            color: #00ffcc; border: 1px solid #00ffcc;
-            padding: 10px 20px; text-decoration: none;
-            text-transform: uppercase; font-size: 12px;
-            letter-spacing: 2px; transition: 0.3s;
-        }
-        .back-btn:hover { background: #00ffcc; color: #000; box-shadow: 0 0 20px #00ffcc; }
 
-        /* Effet de scanline */
-        .scanline {
-            width: 100%; height: 2px; background: rgba(0, 255, 204, 0.1);
-            position: absolute; top: 0; animation: scan 4s linear infinite;
+        body {
+            margin: 0;
+            background: radial-gradient(circle at center, #1b2735 0%, #090a0f 100%);
+            color: #e0e0e0;
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            overflow: hidden;
         }
-        @keyframes scan { from { top: 0; } to { top: 100%; } }
+
+        /* Container avec effet de verre */
+        .glass-panel {
+            width: 90%;
+            max-width: 400px;
+            background: var(--glass);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 25px 50px rgba(0,0,0,0.5);
+            position: relative;
+        }
+
+        /* Lueur décorative */
+        .glass-panel::before {
+            content: "";
+            position: absolute;
+            top: -2px; left: -2px; right: -2px; bottom: -2px;
+            background: linear-gradient(45deg, var(--neon-blue), var(--neon-purple));
+            z-index: -1;
+            border-radius: 22px;
+            opacity: 0.3;
+        }
+
+        h2 {
+            margin: 0 0 20px 0;
+            font-weight: 300;
+            letter-spacing: 4px;
+            text-align: center;
+            color: var(--neon-blue);
+            text-shadow: 0 0 10px rgba(0, 210, 255, 0.5);
+        }
+
+        input {
+            width: 100%;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 15px;
+            color: #fff;
+            font-size: 16px;
+            outline: none;
+            box-sizing: border-box;
+            transition: 0.3s;
+            text-align: center;
+        }
+
+        input:focus {
+            border-color: var(--neon-blue);
+            background: rgba(0, 0, 0, 0.5);
+        }
+
+        .grid-btns {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-top: 20px;
+        }
+
+        button {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border);
+            color: #fff;
+            padding: 12px;
+            border-radius: 10px;
+            font-size: 12px;
+            font-weight: bold;
+            letter-spacing: 1px;
+            cursor: pointer;
+            transition: 0.3s;
+            text-transform: uppercase;
+        }
+
+        button:active {
+            transform: scale(0.95);
+            background: var(--neon-blue);
+            color: #000;
+        }
+
+        /* Zone de résultat "Holographique" */
+        #output {
+            margin-top: 25px;
+            padding: 20px;
+            background: rgba(0, 210, 255, 0.05);
+            border-radius: 12px;
+            min-height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.4em;
+            color: var(--neon-blue);
+            text-shadow: 0 0 8px rgba(0, 210, 255, 0.4);
+            font-family: 'Courier New', monospace;
+            border: 1px solid rgba(0, 210, 255, 0.2);
+        }
+
+        .back-link {
+            margin-top: 30px;
+            color: rgba(255,255,255,0.4);
+            text-decoration: none;
+            font-size: 12px;
+            letter-spacing: 1px;
+            transition: 0.3s;
+        }
+
+        .back-link:hover { color: var(--neon-blue); }
     </style>
 </head>
 <body>
-    <div class="scanline"></div>
-    <div id="hud">
-        <div style="font-weight: bold;">CALC_PRO_OS [v8.2]</div>
-        <div style="font-size: 10px; color: #008877;">NEURAL_LINK: ESTABLISHED</div>
-        <div id="matrix-text" style="font-size: 10px; margin-top: 5px;"></div>
+
+    <div class="glass-panel">
+        <h2>SYMBOLIC_V2</h2>
+        
+        <input type="text" id="inputExp" placeholder="ENTRER ÉQUATION..." spellcheck="false">
+
+        <div class="grid-btns">
+            <button onclick="runSym('simplify')">SIMPLIFIER</button>
+            <button onclick="runSym('d')">DÉRIVER</button>
+            <button onclick="runSym('integral')">INTÉGRER</button>
+            <button onclick="runSym('roots')">RÉSOUDRE</button>
+        </div>
+
+        <div id="output">SYSTEM READY</div>
     </div>
 
-    <a href="index.html" class="back-btn">⬅ Menu Principal</a>
-    <canvas id="c"></canvas>
+    <a href="index.html" class="back-link">EXIT_TO_MAIN_MENU</a>
 
+    <script src="https://cdn.jsdelivr.net/npm/algebrite@1.4.0/dist/algebrite.bundle-for-browser.min.js"></script>
     <script>
-        const canvas = document.getElementById('c');
-        const ctx = canvas.getContext('2d');
-        let w, h, points = [], particles = [];
+        const input = document.getElementById('inputExp');
+        const output = document.getElementById('output');
 
-        // Points du Cube Central
-        const cubeNodes = [
-            {x: -1, y: -1, z: 1}, {x: 1, y: -1, z: 1}, {x: 1, y: 1, z: 1}, {x: -1, y: 1, z: 1},
-            {x: -1, y: -1, z: -1}, {x: 1, y: -1, z: -1}, {x: 1, y: 1, z: -1}, {x: -1, y: 1, z: -1}
-        ];
-        const links = [[0,1],[1,2],[2,3],[3,0],[4,5],[5,6],[6,7],[7,4],[0,4],[1,5],[2,6],[3,7]];
-
-        function init() {
-            w = canvas.width = window.innerWidth;
-            h = canvas.height = window.innerHeight;
-            particles = [];
-            for(let i=0; i<50; i++) {
-                particles.push({
-                    x: (Math.random()-0.5)*10, y: (Math.random()-0.5)*10, z: (Math.random()-0.5)*10,
-                    speed: Math.random()*0.02 + 0.01
-                });
+        function runSym(cmd) {
+            let val = input.value.trim();
+            if (!val) return;
+            try {
+                let res = Algebrite.run(cmd === 'simplify' ? `simplify(${val})` : 
+                          cmd === 'd' ? `d(${val}, x)` : 
+                          cmd === 'integral' ? `integral(${val}, x)` : 
+                          cmd === 'roots' ? `roots(${val})` : val);
+                output.innerText = res.toString();
+            } catch (e) {
+                output.innerText = "SYNTAX_ERROR";
             }
         }
-
-        let angle = 0;
-        function project(p, rotX, rotY) {
-            // Rotation Y
-            let x = p.x * Math.cos(rotY) - p.z * Math.sin(rotY);
-            let z = p.x * Math.sin(rotY) + p.z * Math.cos(rotY);
-            // Rotation X
-            let y = p.y * Math.cos(rotX) - z * Math.sin(rotX);
-            z = p.y * Math.sin(rotX) + z * Math.cos(rotX);
-
-            const scale = 500 / (z + 8);
-            return { x: x * scale + w/2, y: y * scale + h/2, s: scale };
-        }
-
-        function draw() {
-            // Effet de traînée (Motion Blur)
-            ctx.fillStyle = 'rgba(0, 0, 0, 0.15)';
-            ctx.fillRect(0, 0, w, h);
-            
-            angle += 0.015;
-
-            // Dessin des particules (Nuage de données)
-            particles.forEach(p => {
-                p.z -= p.speed * 5; if(p.z < -5) p.z = 5;
-                let proj = project(p, angle*0.3, angle);
-                ctx.fillStyle = `rgba(0, 255, 204, ${proj.s/100})`;
-                ctx.beginPath();
-                ctx.arc(proj.x, proj.y, Math.max(0.5, proj.s*0.2), 0, Math.PI*2);
-                ctx.fill();
-            });
-
-            // Dessin du Cube Central
-            ctx.strokeStyle = "#00ffcc";
-            ctx.lineWidth = 1.5;
-            links.forEach(link => {
-                const p1 = project(cubeNodes[link[0]], angle, angle*0.8);
-                const p2 = project(cubeNodes[link[1]], angle, angle*0.8);
-                ctx.beginPath();
-                ctx.moveTo(p1.x, p1.y);
-                ctx.lineTo(p2.x, p2.y);
-                ctx.stroke();
-            });
-
-            // Texte dynamique Matrix
-            if(Math.random() > 0.9) {
-                document.getElementById('matrix-text').innerText = "CALC:" + Math.random().toString(16).slice(2,10).toUpperCase();
-            }
-
-            requestAnimationFrame(draw);
-        }
-
-        window.onresize = init;
-        init();
-        draw();
     </script>
 </body>
 </html>
