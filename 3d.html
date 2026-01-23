@@ -3,95 +3,123 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CalcPro - 3D Engine</title>
+    <title>CalcPro - Neural Engine</title>
     <style>
         body { margin: 0; background: #000; color: #00ffcc; font-family: 'Courier New', monospace; overflow: hidden; }
         canvas { display: block; }
-        #interface { position: absolute; top: 20px; left: 20px; border-left: 3px solid #00ffcc; padding-left: 15px; pointer-events: none; }
-        .btn { position: absolute; bottom: 25px; left: 25px; background: #00ffcc; color: #000; padding: 12px 20px; 
-                text-decoration: none; font-weight: bold; border-radius: 4px; box-shadow: 0 0 10px #00ffcc; }
+        
+        /* Interface Pro */
+        #hud {
+            position: absolute; top: 20px; left: 20px;
+            padding: 15px; border-left: 2px solid #00ffcc;
+            background: rgba(0, 20, 20, 0.4); pointer-events: none;
+        }
+        
+        /* Bouton Retour Stylé */
+        .back-btn {
+            position: absolute; bottom: 30px; left: 30px;
+            color: #00ffcc; border: 1px solid #00ffcc;
+            padding: 10px 20px; text-decoration: none;
+            text-transform: uppercase; font-size: 12px;
+            letter-spacing: 2px; transition: 0.3s;
+        }
+        .back-btn:hover { background: #00ffcc; color: #000; box-shadow: 0 0 20px #00ffcc; }
+
+        /* Effet de scanline */
+        .scanline {
+            width: 100%; height: 2px; background: rgba(0, 255, 204, 0.1);
+            position: absolute; top: 0; animation: scan 4s linear infinite;
+        }
+        @keyframes scan { from { top: 0; } to { top: 100%; } }
     </style>
 </head>
 <body>
-
-    <div id="interface">
-        <div style="font-size: 1.2em; letter-spacing: 2px;">CALC_PRO_3D</div>
-        <div style="color: #555;">ROTATION_ACTIVE: TRUE</div>
+    <div class="scanline"></div>
+    <div id="hud">
+        <div style="font-weight: bold;">CALC_PRO_OS [v8.2]</div>
+        <div style="font-size: 10px; color: #008877;">NEURAL_LINK: ESTABLISHED</div>
+        <div id="matrix-text" style="font-size: 10px; margin-top: 5px;"></div>
     </div>
 
-    <a href="index.html" class="btn">⬅ MENU</a>
-
-    <canvas id="renderCanvas"></canvas>
+    <a href="index.html" class="back-btn">⬅ Menu Principal</a>
+    <canvas id="c"></canvas>
 
     <script>
-        const canvas = document.getElementById('renderCanvas');
+        const canvas = document.getElementById('c');
         const ctx = canvas.getContext('2d');
-        let width, height;
+        let w, h, points = [], particles = [];
 
-        // Points du cube (X, Y, Z)
-        let points = [
+        // Points du Cube Central
+        const cubeNodes = [
             {x: -1, y: -1, z: 1}, {x: 1, y: -1, z: 1}, {x: 1, y: 1, z: 1}, {x: -1, y: 1, z: 1},
             {x: -1, y: -1, z: -1}, {x: 1, y: -1, z: -1}, {x: 1, y: 1, z: -1}, {x: -1, y: 1, z: -1}
         ];
+        const links = [[0,1],[1,2],[2,3],[3,0],[4,5],[5,6],[6,7],[7,4],[0,4],[1,5],[2,6],[3,7]];
 
-        // Connexions entre les points pour former les lignes
-        const links = [
-            [0,1], [1,2], [2,3], [3,0], // Face avant
-            [4,5], [5,6], [6,7], [7,4], // Face arrière
-            [0,4], [1,5], [2,6], [3,7]  // Côtés
-        ];
-
-        let angle = 0;
-
-        function resize() {
-            width = canvas.width = window.innerWidth;
-            height = canvas.height = window.innerHeight;
+        function init() {
+            w = canvas.width = window.innerWidth;
+            h = canvas.height = window.innerHeight;
+            particles = [];
+            for(let i=0; i<50; i++) {
+                particles.push({
+                    x: (Math.random()-0.5)*10, y: (Math.random()-0.5)*10, z: (Math.random()-0.5)*10,
+                    speed: Math.random()*0.02 + 0.01
+                });
+            }
         }
 
-        function project(p) {
-            // Rotation sur 2 axes (Y et X)
-            let x = p.x * Math.cos(angle) - p.z * Math.sin(angle);
-            let z = p.x * Math.sin(angle) + p.z * Math.cos(angle);
-            let y = p.y * Math.cos(angle * 0.5) - z * Math.sin(angle * 0.5);
-            z = p.y * Math.sin(angle * 0.5) + z * Math.cos(angle * 0.5);
+        let angle = 0;
+        function project(p, rotX, rotY) {
+            // Rotation Y
+            let x = p.x * Math.cos(rotY) - p.z * Math.sin(rotY);
+            let z = p.x * Math.sin(rotY) + p.z * Math.cos(rotY);
+            // Rotation X
+            let y = p.y * Math.cos(rotX) - z * Math.sin(rotX);
+            z = p.y * Math.sin(rotX) + z * Math.cos(rotX);
 
-            // Projection perspective
-            const perspective = 400 / (z + 4);
-            return {
-                x: x * perspective * 100 + width / 2,
-                y: y * perspective * 100 + height / 2
-            };
+            const scale = 500 / (z + 8);
+            return { x: x * scale + w/2, y: y * scale + h/2, s: scale };
         }
 
         function draw() {
-            ctx.fillStyle = "black";
-            ctx.fillRect(0, 0, width, height);
+            // Effet de traînée (Motion Blur)
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.15)';
+            ctx.fillRect(0, 0, w, h);
             
-            angle += 0.02; // Vitesse de rotation
-            ctx.strokeStyle = "#00ffcc";
-            ctx.lineWidth = 2;
-            ctx.lineCap = "round";
+            angle += 0.015;
 
-            // Dessiner les lignes
+            // Dessin des particules (Nuage de données)
+            particles.forEach(p => {
+                p.z -= p.speed * 5; if(p.z < -5) p.z = 5;
+                let proj = project(p, angle*0.3, angle);
+                ctx.fillStyle = `rgba(0, 255, 204, ${proj.s/100})`;
+                ctx.beginPath();
+                ctx.arc(proj.x, proj.y, Math.max(0.5, proj.s*0.2), 0, Math.PI*2);
+                ctx.fill();
+            });
+
+            // Dessin du Cube Central
+            ctx.strokeStyle = "#00ffcc";
+            ctx.lineWidth = 1.5;
             links.forEach(link => {
-                const p1 = project(points[link[0]]);
-                const p2 = project(points[link[1]]);
-                
+                const p1 = project(cubeNodes[link[0]], angle, angle*0.8);
+                const p2 = project(cubeNodes[link[1]], angle, angle*0.8);
                 ctx.beginPath();
                 ctx.moveTo(p1.x, p1.y);
                 ctx.lineTo(p2.x, p2.y);
                 ctx.stroke();
-
-                // Ajouter un petit point aux sommets
-                ctx.fillStyle = "#fff";
-                ctx.fillRect(p1.x-2, p1.y-2, 4, 4);
             });
+
+            // Texte dynamique Matrix
+            if(Math.random() > 0.9) {
+                document.getElementById('matrix-text').innerText = "CALC:" + Math.random().toString(16).slice(2,10).toUpperCase();
+            }
 
             requestAnimationFrame(draw);
         }
 
-        window.addEventListener('resize', resize);
-        resize();
+        window.onresize = init;
+        init();
         draw();
     </script>
 </body>
