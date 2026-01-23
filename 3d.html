@@ -8,54 +8,40 @@
 <style>
 body{
   margin:0;
-  background:#0f172a;
+  background:#020617;
   color:white;
   font-family:Arial, sans-serif;
-  display:flex;
-  flex-direction:column;
-  align-items:center;
 }
 h1{
+  text-align:center;
   color:#00ffcc;
   margin:10px;
 }
 .toolbar{
   display:flex;
   gap:10px;
-  flex-wrap:wrap;
   justify-content:center;
+  flex-wrap:wrap;
+}
+button,input{
+  padding:10px;
+  border-radius:8px;
+  border:none;
+  font-size:14px;
 }
 button{
   background:#2563eb;
-  border:none;
   color:white;
-  padding:10px 16px;
-  border-radius:8px;
   cursor:pointer;
-  font-size:14px;
 }
-button:hover{transform:scale(1.05);}
-input{
-  width:70px;
-  padding:6px;
-  border-radius:6px;
-  border:none;
+#info{
   text-align:center;
+  color:#00ffcc;
+  margin:8px;
 }
 #scene{
   width:100%;
-  height:70vh;   /* ← LA CLÉ */
-  margin-top:10px;
-  border-radius:12px;
-  overflow:hidden;
-}
-  #info{
-  margin:8px;
-  color:#00ffcc;
-}
-footer{
-  margin:8px;
-  color:#aaa;
+  height:75vh;
 }
 </style>
 </head>
@@ -69,113 +55,64 @@ footer{
   <input id="y" type="number" placeholder="Y">
   <input id="z" type="number" placeholder="Z">
   <button id="add">Ajouter Point</button>
-  <button id="connect">Connecter</button>
-  <button id="clear">Effacer</button>
 </div>
 
 <div id="info">x=0 | y=0 | z=0</div>
 <div id="scene"></div>
 
-<footer>Développeur : <b>Lebbar Yahya</b></footer>
+<script type="module">
+import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.152.2/build/three.module.js";
+import { OrbitControls } from "https://cdn.jsdelivr.net/npm/three@0.152.2/examples/jsm/controls/OrbitControls.js";
 
-<script src="https://cdn.jsdelivr.net/npm/three@0.152.2/build/three.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/three@0.152.2/examples/js/controls/OrbitControls.js"></script>
-
-<script>
-// ===== SCÈNE =====
 const container = document.getElementById("scene");
+
+// SCENE
 const scene = new THREE.Scene();
 scene.background = new THREE.Color(0x020617);
 
+// CAMERA
 const camera = new THREE.PerspectiveCamera(
-  70,
+  75,
   container.clientWidth / container.clientHeight,
   0.1,
   1000
 );
-camera.position.set(15,15,15);
+camera.position.set(12,12,12);
 
+// RENDERER
 const renderer = new THREE.WebGLRenderer({antialias:true});
 renderer.setSize(container.clientWidth, container.clientHeight);
 container.appendChild(renderer.domElement);
 
-const controls = new THREE.OrbitControls(camera, renderer.domElement);
+// CONTROLS
+const controls = new OrbitControls(camera, renderer.domElement);
 controls.enableDamping = true;
 
-// ===== LUMIÈRE =====
-scene.add(new THREE.AmbientLight(0xffffff,0.7));
-const light = new THREE.DirectionalLight(0xffffff,0.5);
-light.position.set(10,20,10);
-scene.add(light);
+// LIGHT
+scene.add(new THREE.AmbientLight(0xffffff,0.8));
 
-// ===== AXES XYZ =====
+// AXES + GRILLES
 scene.add(new THREE.AxesHelper(10));
+scene.add(new THREE.GridHelper(20,20));
 
-// ===== GRILLES 3D (VRAIE XYZ) =====
-const size = 20, div = 20;
-
-const gridXZ = new THREE.GridHelper(size, div, 0x00ffcc, 0x004444);
-scene.add(gridXZ);
-
-const gridXY = new THREE.GridHelper(size, div, 0xff00ff, 0x440044);
-gridXY.rotation.x = Math.PI / 2;
-scene.add(gridXY);
-
-const gridYZ = new THREE.GridHelper(size, div, 0xffff00, 0x444400);
-gridYZ.rotation.z = Math.PI / 2;
-scene.add(gridYZ);
-
-// ===== DONNÉES =====
-let points = [];
-let lines = [];
-let lastPoint = null;
-let connectMode = false;
+// POINTS
 const info = document.getElementById("info");
 
-// ===== FONCTIONS =====
-function addPoint(x,y,z){
+document.getElementById("add").onclick = ()=>{
+  const x = parseFloat(document.getElementById("x").value)||0;
+  const y = parseFloat(document.getElementById("y").value)||0;
+  const z = parseFloat(document.getElementById("z").value)||0;
+
   const geo = new THREE.SphereGeometry(0.3,16,16);
   const mat = new THREE.MeshStandardMaterial({color:0xffeb3b});
   const p = new THREE.Mesh(geo,mat);
   p.position.set(x,y,z);
   scene.add(p);
-  points.push(p);
+
   info.innerText = `x=${x} | y=${y} | z=${z}`;
-  if(connectMode && lastPoint){
-    const g = new THREE.BufferGeometry().setFromPoints([
-      lastPoint.position.clone(),
-      p.position.clone()
-    ]);
-    const l = new THREE.Line(g,new THREE.LineBasicMaterial({color:0x00bcd4}));
-    scene.add(l);
-    lines.push(l);
-  }
-  lastPoint = p;
-}
-
-// ===== BOUTONS =====
-document.getElementById("add").onclick = ()=>{
-  const x = parseFloat(x.value)||0;
-  const y = parseFloat(y.value)||0;
-  const z = parseFloat(z.value)||0;
-  addPoint(x,y,z);
 };
 
-document.getElementById("connect").onclick = ()=>{
-  connectMode = !connectMode;
-  lastPoint = null;
-  document.getElementById("connect").style.background =
-    connectMode ? "#22c55e" : "#2563eb";
-};
-
-document.getElementById("clear").onclick = ()=>{
-  points.forEach(p=>scene.remove(p));
-  lines.forEach(l=>scene.remove(l));
-  points=[]; lines=[]; lastPoint=null;
-  info.innerText="x=0 | y=0 | z=0";
-};
-
-// ===== ANIMATION =====
+// ANIMATION
 function animate(){
   requestAnimationFrame(animate);
   controls.update();
@@ -183,8 +120,9 @@ function animate(){
 }
 animate();
 
+// RESIZE
 window.addEventListener("resize",()=>{
-  camera.aspect = container.clientWidth/container.clientHeight;
+  camera.aspect = container.clientWidth / container.clientHeight;
   camera.updateProjectionMatrix();
   renderer.setSize(container.clientWidth, container.clientHeight);
 });
