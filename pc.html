@@ -1,103 +1,151 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CalcPro - Physique Chimie</title>
-    <style>
-        :root { --neon: #00ffcc; --bg: #0a0a0a; }
-        body { background: var(--bg); color: white; font-family: 'Segoe UI', sans-serif; margin: 0; padding: 20px; }
-        h1 { color: var(--neon); text-align: center; text-transform: uppercase; letter-spacing: 2px; }
-        
-        .container { max-width: 500px; margin: 0 auto; background: #1a1a1a; padding: 20px; border: 1px solid var(--neon); border-radius: 10px; box-shadow: 0 0 15px rgba(0, 255, 204, 0.2); }
-        
-        .tab-menu { display: flex; gap: 10px; margin-bottom: 20px; }
-        .tab-btn { flex: 1; padding: 10px; background: #333; border: none; color: white; cursor: pointer; border-radius: 5px; transition: 0.3s; }
-        .tab-btn.active { background: var(--neon); color: black; font-weight: bold; }
+<meta charset="UTF-8">
+<title>CalcPro – Calcul Physique</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-        .form-group { margin-bottom: 15px; }
-        label { display: block; margin-bottom: 5px; color: var(--neon); font-size: 0.9em; }
-        input { width: 100%; padding: 10px; background: #222; border: 1px solid #444; color: white; border-radius: 5px; box-sizing: border-box; }
-        input:focus { border-color: var(--neon); outline: none; }
+<style>
+body{
+  margin:0;
+  background:#0d0f1f;
+  font-family:Arial, Helvetica, sans-serif;
+  color:white;
+}
 
-        .result-box { margin-top: 20px; padding: 15px; background: rgba(0, 255, 204, 0.1); border-radius: 5px; text-align: center; border: 1px dashed var(--neon); }
-        #result-text { font-size: 1.2em; font-weight: bold; color: var(--neon); }
+header{
+  text-align:center;
+  padding:20px;
+  font-size:24px;
+  color:#00ffcc;
+}
 
-        .back-btn { display: inline-block; margin-top: 20px; color: var(--neon); text-decoration: none; font-size: 0.9em; border: 1px solid var(--neon); padding: 5px 10px; border-radius: 4px; }
-    </style>
+.container{
+  max-width:500px;
+  margin:auto;
+  background:#151933;
+  padding:20px;
+  border-radius:15px;
+  box-shadow:0 0 25px rgba(0,0,0,.6);
+}
+
+select,input{
+  width:100%;
+  padding:12px;
+  font-size:16px;
+  border-radius:10px;
+  border:none;
+  outline:none;
+  margin-bottom:12px;
+}
+
+button{
+  width:100%;
+  padding:14px;
+  font-size:16px;
+  border:none;
+  border-radius:10px;
+  background:#00ffcc;
+  font-weight:bold;
+  cursor:pointer;
+}
+
+button:hover{
+  background:#00d4aa;
+}
+
+.result{
+  margin-top:15px;
+  background:#0b0e1a;
+  padding:15px;
+  border-radius:10px;
+  min-height:50px;
+  font-size:16px;
+}
+
+footer{
+  text-align:center;
+  margin-top:20px;
+  color:#aaa;
+  font-size:13px;
+}
+</style>
 </head>
+
 <body>
 
-    <h1>LAB_STATION v1.0</h1>
+<header>⚙️ Calcul Physique</header>
 
-    <div class="container">
-        <div class="tab-menu">
-            <button class="tab-btn active" onclick="switchTab('physique')">PHYSIQUE</button>
-            <button class="tab-btn" onclick="switchTab('chimie')">CHIMIE</button>
-        </div>
+<div class="container">
 
-        <div id="physique-sec">
-            <label>Calcul d'Énergie (Einstein)</label>
-            <div class="form-group">
-                <label>Masse (kg)</label>
-                <input type="number" id="mass" placeholder="Ex: 1" oninput="calcPhysique()">
-            </div>
-            <div class="result-box">
-                <small>Énergie (Joules)</small><br>
-                <span id="result-energy">0</span>
-            </div>
-        </div>
+  <select id="type">
+    <option value="v">Vitesse (v = d / t)</option>
+    <option value="a">Accélération (a = Δv / t)</option>
+    <option value="f">Force (F = m × a)</option>
+    <option value="ec">Énergie cinétique (Ec = ½mv²)</option>
+    <option value="ep">Énergie potentielle (Ep = mgh)</option>
+    <option value="p">Puissance (P = W / t)</option>
+    <option value="ohm">Loi d’Ohm (U = R × I)</option>
+    <option value="pression">Pression (P = F / S)</option>
+    <option value="densite">Densité (ρ = m / V)</option>
+  </select>
 
-        <div id="chimie-sec" style="display:none;">
-            <label>Quantité de matière (Moles)</label>
-            <div class="form-group">
-                <label>Masse de l'échantillon (g)</label>
-                <input type="number" id="mass-ch" placeholder="Ex: 10" oninput="calcChimie()">
-            </div>
-            <div class="form-group">
-                <label>Masse Molaire (g/mol)</label>
-                <input type="number" id="molar" placeholder="Ex: 58.5" oninput="calcChimie()">
-            </div>
-            <div class="result-box">
-                <small>Quantité n (mol)</small><br>
-                <span id="result-moles">0</span>
-            </div>
-        </div>
+  <input id="x" placeholder="Valeur 1">
+  <input id="y" placeholder="Valeur 2">
 
-        <a href="index.html" class="back-btn">⬅ RETOUR MENU</a>
-    </div>
+  <button onclick="calculer()">Calculer</button>
 
-    <script>
-        function switchTab(type) {
-            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
-            if (type === 'physique') {
-                document.getElementById('physique-sec').style.display = 'block';
-                document.getElementById('chimie-sec').style.display = 'none';
-                document.querySelectorAll('.tab-btn')[0].classList.add('active');
-            } else {
-                document.getElementById('physique-sec').style.display = 'none';
-                document.getElementById('chimie-sec').style.display = 'block';
-                document.querySelectorAll('.tab-btn')[1].classList.add('active');
-            }
-        }
+  <div class="result" id="result">Résultat…</div>
 
-        function calcPhysique() {
-            const m = document.getElementById('mass').value;
-            const c = 299792458; // Vitesse de la lumière
-            if (m) {
-                const e = m * Math.pow(c, 2);
-                document.getElementById('result-energy').innerText = e.toExponential(4) + " J";
-            }
-        }
+</div>
 
-        function calcChimie() {
-            const m = document.getElementById('mass-ch').value;
-            const M = document.getElementById('molar').value;
-            if (m && M && M != 0) {
-                const n = m / M;
-                document.getElementById('result-moles').innerText = n.toFixed(4) + " mol";
-            }
-        }
-    </script>
+<footer>CalcPro © Lebbar Yahya</footer>
+
+<script>
+function calculer(){
+  let type = document.getElementById("type").value;
+  let x = parseFloat(document.getElementById("x").value);
+  let y = parseFloat(document.getElementById("y").value);
+  let res = "";
+
+  if(isNaN(x) || isNaN(y)){
+    document.getElementById("result").innerText = "❌ Valeurs invalides";
+    return;
+  }
+
+  switch(type){
+    case "v":
+      res = "v = " + (x / y) + " m/s";
+      break;
+    case "a":
+      res = "a = " + (x / y) + " m/s²";
+      break;
+    case "f":
+      res = "F = " + (x * y) + " N";
+      break;
+    case "ec":
+      res = "Ec = " + (0.5 * x * y * y) + " J";
+      break;
+    case "ep":
+      res = "Ep = " + (x * y * 9.81) + " J";
+      break;
+    case "p":
+      res = "P = " + (x / y) + " W";
+      break;
+    case "ohm":
+      res = "U = " + (x * y) + " V";
+      break;
+    case "pression":
+      res = "P = " + (x / y) + " Pa";
+      break;
+    case "densite":
+      res = "ρ = " + (x / y) + " kg/m³";
+      break;
+  }
+
+  document.getElementById("result").innerText = res;
+}
+</script>
+
 </body>
 </html>
