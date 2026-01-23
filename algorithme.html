@@ -1,91 +1,160 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-<meta charset="UTF-8">
-<title>3D Ultra</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<style>
-  html, body { margin:0; padding:0; width:100%; height:100%; background:#121212; overflow:hidden; }
-  #scene3D { width:100%; height:100%; }
-</style>
+    <meta charset="UTF-8">
+    <title>CalcPro - 3D A* Interactive</title>
+    <style>
+        body { margin: 0; background: #000; overflow: hidden; font-family: 'Courier New', monospace; }
+        
+        /* Overlay UI Style Matrix */
+        #hud {
+            position: absolute; top: 20px; left: 20px;
+            color: #00ffcc; background: rgba(0, 20, 0, 0.8);
+            padding: 20px; border: 1px solid #00ffcc;
+            border-radius: 5px; pointer-events: none; z-index: 100;
+        }
+        
+        .btn-ui {
+            position: absolute; bottom: 30px; right: 30px;
+            background: #00ffcc; color: #000; padding: 12px 24px;
+            border: none; border-radius: 4px; font-weight: bold;
+            cursor: pointer; text-decoration: none; z-index: 100;
+        }
+
+        .back { left: 30px; right: auto; background: #333; color: #00ffcc; border: 1px solid #00ffcc; }
+
+        #loading {
+            position: fixed; width: 100%; height: 100%; background: #000;
+            display: flex; justify-content: center; align-items: center;
+            color: #00ffcc; font-size: 24px; z-index: 1000;
+        }
+    </style>
 </head>
 <body>
-<div id="scene3D"></div>
 
-<!-- Three.js -->
-<script src="https://cdn.jsdelivr.net/npm/three@0.158.0/build/three.min.js"></script>
-<!-- OrbitControls -->
-<script src="https://cdn.jsdelivr.net/npm/three@0.158.0/examples/js/controls/OrbitControls.js"></script>
+    <div id="loading">INITIALISATION DU SYSTÈME...</div>
 
-<script>
-  const container = document.getElementById("scene3D");
+    <div id="hud">
+        <div style="font-size: 1.2em; border-bottom: 1px solid #00ffcc; margin-bottom: 10px;">NEURAL_NAV V.4.0</div>
+        <div>CIBLE : <span style="color: #fff;">DESTINATION_REACHED</span></div>
+        <div>MODE : <span style="color: #fff;">INTERACTIF_3D</span></div>
+        <div style="margin-top: 10px; font-size: 0.8em; color: #888;">SCROLL: ZOOM | CLIC: ROTATION</div>
+    </div>
 
-  // Scène
-  const scene = new THREE.Scene();
-  scene.background = new THREE.Color(0x121212);
+    <a href="index.html" class="btn-ui back">RETOUR MENU</a>
+    <button class="btn-ui" onclick="location.reload()">RÉGÉNÉRER</button>
 
-  // Caméra
-  const camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 1000);
-  camera.position.set(5,5,5);
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
 
-  // Rendu
-  const renderer = new THREE.WebGLRenderer({antialias:true});
-  renderer.setSize(window.innerWidth, window.innerHeight);
-  container.appendChild(renderer.domElement);
+    <script>
+        window.onload = () => { document.getElementById('loading').style.display = 'none'; };
 
-  // Axes
-  const axesHelper = new THREE.AxesHelper(5);
-  scene.add(axesHelper);
+        const SIZE = 12;
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer({ antialias: true });
+        
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setClearColor(0x000000);
+        document.body.appendChild(renderer.domElement);
 
-  // Lumière
-  const light = new THREE.DirectionalLight(0xffffff,1);
-  light.position.set(10,10,10);
-  scene.add(light);
-  scene.add(new THREE.AmbientLight(0x404040));
+        // Lumières
+        const ambientLight = new THREE.AmbientLight(0x00ffcc, 0.2);
+        scene.add(ambientLight);
+        const pointLight = new THREE.PointLight(0x00ffcc, 1, 100);
+        pointLight.position.set(SIZE, SIZE, SIZE);
+        scene.add(pointLight);
 
-  // Cube
-  const cube = new THREE.Mesh(
-    new THREE.BoxGeometry(1,1,1),
-    new THREE.MeshStandardMaterial({color:0x00ff00, wireframe:true})
-  );
-  scene.add(cube);
+        // Grille et Obstacles
+        const nodes = [];
+        const geometry = new THREE.BoxGeometry(0.7, 0.7, 0.7);
+        const gridGroup = new THREE.Group();
 
-  // Sphère
-  const sphere = new THREE.Mesh(
-    new THREE.SphereGeometry(0.5,32,32),
-    new THREE.MeshStandardMaterial({color:0xff0000})
-  );
-  sphere.position.set(2,0.5,0);
-  scene.add(sphere);
+        for (let x = 0; x < SIZE; x++) {
+            nodes[x] = [];
+            for (let y = 0; y < SIZE; y++) {
+                nodes[x][y] = [];
+                for (let z = 0; z < SIZE; z++) {
+                    const isWall = Math.random() < 0.25 && (x+y+z > 2);
+                    const material = new THREE.MeshPhongMaterial({
+                        color: isWall ? 0x111111 : 0x00ffcc,
+                        transparent: true,
+                        opacity: isWall ? 0.8 : 0.05,
+                        shininess: 100
+                    });
+                    const cube = new THREE.Mesh(geometry, material);
+                    cube.position.set(x, y, z);
+                    gridGroup.add(cube);
+                    nodes[x][y][z] = { x, y, z, isWall, g: Infinity, f: Infinity, parent: null, mesh: cube };
+                }
+            }
+        }
+        scene.add(gridGroup);
 
-  // Points
-  const pointsGeometry = new THREE.BufferGeometry();
-  const vertices = new Float32Array([2,0,0,0,2,0,0,0,2]);
-  pointsGeometry.setAttribute('position', new THREE.BufferAttribute(vertices,3));
-  const pointsMaterial = new THREE.PointsMaterial({color:0x0000ff, size:0.2});
-  const points = new THREE.Points(pointsGeometry, pointsMaterial);
-  scene.add(points);
+        // Algorithme A*
+        function findPath() {
+            let start = nodes[0][0][0];
+            let end = nodes[SIZE-1][SIZE-1][SIZE-1];
+            let openSet = [start];
+            start.g = 0;
 
-  // Contrôles
-  const controls = new THREE.OrbitControls(camera, renderer.domElement);
-  controls.enableDamping = true;
+            while (openSet.length > 0) {
+                openSet.sort((a, b) => a.f - b.f);
+                let current = openSet.shift();
 
-  // Animation
-  function animate(){
-    requestAnimationFrame(animate);
-    cube.rotation.x +=0.01;
-    sphere.rotation.y +=0.01;
-    controls.update();
-    renderer.render(scene, camera);
-  }
-  animate();
+                if (current === end) {
+                    while (current) {
+                        current.mesh.material.color.set(0x00ffcc);
+                        current.mesh.material.opacity = 1;
+                        current.mesh.scale.set(1.2, 1.2, 1.2);
+                        current = current.parent;
+                    }
+                    return;
+                }
 
-  // Resize
-  window.addEventListener('resize', ()=>{
-    camera.aspect = window.innerWidth/window.innerHeight;
-    camera.updateProjectionMatrix();
-    renderer.setSize(window.innerWidth, window.innerHeight);
-  });
-</script>
+                const neighbors = [];
+                [[1,0,0],[-1,0,0],[0,1,0],[0,-1,0],[0,0,1],[0,0,-1]].forEach(d => {
+                    let nx = current.x+d[0], ny = current.y+d[1], nz = current.z+d[2];
+                    if(nx>=0 && nx<SIZE && ny>=0 && ny<SIZE && nz>=0 && nz<SIZE) neighbors.push(nodes[nx][ny][nz]);
+                });
+
+                for (let nb of neighbors) {
+                    if (!nb.isWall) {
+                        let tentativeG = current.g + 1;
+                        if (tentativeG < nb.g) {
+                            nb.parent = current;
+                            nb.g = tentativeG;
+                            nb.f = nb.g + (Math.abs(nb.x-end.x) + Math.abs(nb.y-end.y) + Math.abs(nb.z-end.z));
+                            if (!openSet.includes(nb)) openSet.push(nb);
+                        }
+                    }
+                }
+            }
+        }
+
+        // Caméra et Interaction
+        camera.position.set(18, 18, 18);
+        const controls = new THREE.OrbitControls(camera, renderer.domElement);
+        controls.enableDamping = true;
+
+        findPath();
+
+        // Animation
+        function animate() {
+            requestAnimationFrame(animate);
+            gridGroup.rotation.y += 0.001;
+            controls.update();
+            renderer.render(scene, camera);
+        }
+        animate();
+
+        // Resize
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+    </script>
 </body>
 </html>
