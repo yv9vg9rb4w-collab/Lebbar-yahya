@@ -2,203 +2,149 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>A* Pathfinding 3D - Visualiseur</title>
+    <title>A* Pathfinding Pro 3D</title>
     <style>
-        body { margin: 0; background-color: #050505; color: white; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-        canvas { display: block; }
-        #ui {
-            position: absolute;
-            top: 20px;
-            left: 20px;
-            background: rgba(0, 0, 0, 0.7);
-            padding: 15px;
-            border-radius: 8px;
-            border: 1px solid #444;
-            pointer-events: none;
-        }
-        h1 { margin: 0 0 10px 0; font-size: 18px; color: #00d4ff; }
-        .legend { font-size: 14px; line-height: 1.6; }
-        .dot { height: 10px; width: 10px; display: inline-block; border-radius: 50%; margin-right: 5px; }
+        body { margin: 0; background: #000; overflow: hidden; font-family: 'Courier New', monospace; }
+        #overlay { position: absolute; bottom: 20px; left: 20px; color: #0f0; background: rgba(0,20,0,0.8); padding: 15px; border: 1px solid #0f0; text-transform: uppercase; letter-spacing: 2px; pointer-events: none; }
+        .stat { color: #fff; font-weight: bold; }
     </style>
 </head>
 <body>
-
-    <div id="ui">
-        <h1>Navigation A* 3D</h1>
-        <div class="legend">
-            <div><span class="dot" style="background: #00ff00;"></span> Départ (0,0,0)</div>
-            <div><span class="dot" style="background: #ff0000;"></span> Arrivée (9,9,9)</div>
-            <div><span class="dot" style="background: #00aaff;"></span> Chemin optimal</div>
-            <div><span class="dot" style="background: #444444;"></span> Obstacle (Mur)</div>
-            <p style="font-size: 11px; color: #aaa;">Utilisez la souris pour pivoter et zoomer</p>
-        </div>
+    <div id="overlay">
+        System: <span class="stat">A-STAR_v2.0</span><br>
+        Status: <span class="stat" id="status">Calcul en cours...</span><br>
+        Grid: <span class="stat">20x20x20 (8,000 Nodes)</span>
     </div>
 
     <script type="importmap">
-        {
-            "imports": {
-                "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
-                "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
-            }
-        }
+        { "imports": { "three": "https://unpkg.com/three@0.160.0/build/three.module.js", "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/" } }
     </script>
 
     <script type="module">
         import * as THREE from 'three';
         import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 
-        // --- PARAMÈTRES ---
-        const GRID_SIZE = 10;
-        const nodes = [];
-        
-        // --- SCÈNE & RENDERER ---
+        // --- SETUP PRO ---
+        const size = 20;
         const scene = new THREE.Scene();
-        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 1000);
         const renderer = new THREE.WebGLRenderer({ antialias: true });
         renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setPixelRatio(window.devicePixelRatio);
         document.body.appendChild(renderer.domElement);
 
-        // Lumière pour mieux voir les volumes
-        const light = new THREE.DirectionalLight(0xffffff, 1);
-        light.position.set(10, 20, 10);
-        scene.add(light);
-        scene.add(new THREE.AmbientLight(0x404040));
-
         const controls = new OrbitControls(camera, renderer.domElement);
+        camera.position.set(30, 30, 30);
 
-        // --- CLASSE DU NOEUD ---
-        class Node {
-            constructor(x, y, z) {
-                this.x = x; this.y = y; this.z = z;
-                this.isWall = Math.random() < 0.25; // 25% de chance d'être un mur
-                this.g = 0; this.h = 0; this.f = 0;
-                this.parent = null;
-                
-                // Création visuelle (Mesh)
-                const geometry = new THREE.BoxGeometry(0.6, 0.6, 0.6);
-                const material = new THREE.MeshPhongMaterial({ 
-                    color: this.isWall ? 0x333333 : 0xffffff,
-                    transparent: true,
-                    opacity: this.isWall ? 0.7 : 0.05
-                });
-                this.mesh = new THREE.Mesh(geometry, material);
-                this.mesh.position.set(x, y, z);
-                scene.add(this.mesh);
+        // --- DONNÉES & ALGORITHME ---
+        const grid = [];
+        const start = {x:0, y:0, z:0};
+        const end = {x:size-1, y:size-1, z:size-1};
+
+        function createGrid() {
+            for(let x=0; x<size; x++) {
+                grid[x] = [];
+                for(let y=0; y<size; y++) {
+                    grid[x][y] = [];
+                    for(let z=0; z<size; z++) {
+                        grid[x][y][z] = {
+                            x, y, z,
+                            isWall: Math.random() < 0.3 && !(x===0 && y===0 && z===0) && !(x===size-1 && y===size-1 && z===size-1),
+                            g: Infinity, h: 0, f: Infinity, parent: null
+                        };
+                    }
+                }
             }
         }
 
-        // --- ALGORITHME A* ---
-        function solve() {
-            // Initialisation de la grille
-            for (let x = 0; x < GRID_SIZE; x++) {
-                nodes[x] = [];
-                for (let y = 0; y < GRID_SIZE; y++) {
-                    nodes[x][y] = [];
-                    for (let z = 0; z < GRID_SIZE; z++) {
-                        nodes[x][y][z] = new Node(x, y, z);
-                    }
-                }
-            }
-
-            const startNode = nodes[0][0][0];
-            const endNode = nodes[GRID_SIZE-1][GRID_SIZE-1][GRID_SIZE-1];
+        function aStar() {
+            let openSet = [grid[start.x][start.y][start.z]];
+            openSet[0].g = 0;
             
-            // Forcer départ et arrivée libres
-            startNode.isWall = false;
-            startNode.mesh.material.color.set(0x00ff00);
-            startNode.mesh.material.opacity = 1;
-            
-            endNode.isWall = false;
-            endNode.mesh.material.color.set(0xff0000);
-            endNode.mesh.material.opacity = 1;
+            while(openSet.length > 0) {
+                let current = openSet.reduce((prev, curr) => prev.f < curr.f ? prev : curr);
+                
+                if(current.x === end.x && current.y === end.y && current.z === end.z) return current;
 
-            let openSet = [startNode];
-            let closedSet = [];
-
-            while (openSet.length > 0) {
-                let lowestIndex = 0;
-                for (let i = 0; i < openSet.length; i++) {
-                    if (openSet[i].f < openSet[lowestIndex].f) lowestIndex = i;
-                }
-
-                let current = openSet[lowestIndex];
-
-                if (current === endNode) {
-                    // On a trouvé ! On remonte le chemin
-                    let temp = current;
-                    while (temp.parent) {
-                        if (temp !== endNode) {
-                            temp.mesh.material.color.set(0x00aaff);
-                            temp.mesh.material.opacity = 0.8;
-                        }
-                        temp = temp.parent;
-                    }
-                    console.log("Chemin trouvé !");
-                    return;
-                }
-
-                openSet.splice(lowestIndex, 1);
-                closedSet.push(current);
-
-                // Vérifier les 6 voisins (Haut, Bas, Gauche, Droite, Devant, Derrière)
+                openSet = openSet.filter(n => n !== current);
+                
                 const neighbors = [];
-                const directions = [[1,0,0],[-1,0,0],[0,1,0],[0,-1,0],[0,0,1],[0,0,-1]];
-                
-                for (let d of directions) {
-                    let nx = current.x + d[0], ny = current.y + d[1], nz = current.z + d[2];
-                    if (nx>=0 && nx<GRID_SIZE && ny>=0 && ny<GRID_SIZE && nz>=0 && nz<GRID_SIZE) {
-                        neighbors.push(nodes[nx][ny][nz]);
-                    }
-                }
+                [[1,0,0],[-1,0,0],[0,1,0],[0,-1,0],[0,0,1],[0,0,-1]].forEach(d => {
+                    let nx = current.x+d[0], ny = current.y+d[1], nz = current.z+d[2];
+                    if(nx>=0 && nx<size && ny>=0 && ny<size && nz>=0 && nz<size) neighbors.push(grid[nx][ny][nz]);
+                });
 
-                for (let neighbor of neighbors) {
-                    if (!closedSet.includes(neighbor) && !neighbor.isWall) {
-                        let gScore = current.g + 1;
-                        let newPath = false;
-
-                        if (openSet.includes(neighbor)) {
-                            if (gScore < neighbor.g) {
-                                neighbor.g = gScore;
-                                newPath = true;
-                            }
-                        } else {
-                            neighbor.g = gScore;
-                            newPath = true;
-                            openSet.push(neighbor);
-                        }
-
-                        if (newPath) {
-                            neighbor.h = Math.abs(neighbor.x - endNode.x) + 
-                                         Math.abs(neighbor.y - endNode.y) + 
-                                         Math.abs(neighbor.z - endNode.z);
-                            neighbor.f = neighbor.g + neighbor.h;
-                            neighbor.parent = current;
-                        }
+                for(let neighbor of neighbors) {
+                    if(neighbor.isWall) continue;
+                    let tentativeG = current.g + 1;
+                    if(tentativeG < neighbor.g) {
+                        neighbor.parent = current;
+                        neighbor.g = tentativeG;
+                        neighbor.h = Math.abs(neighbor.x-end.x) + Math.abs(neighbor.y-end.y) + Math.abs(neighbor.z-end.z);
+                        neighbor.f = neighbor.g + neighbor.h;
+                        if(!openSet.includes(neighbor)) openSet.push(neighbor);
                     }
                 }
             }
-            alert("Pas de chemin possible avec ces obstacles !");
+            return null;
         }
 
-        // --- BOUCLE DE RENDU ---
-        camera.position.set(15, 15, 15);
-        controls.update();
+        // --- RENDU INSTANCIÉ (OPTIMISÉ) ---
+        createGrid();
+        const pathEnd = aStar();
+        document.getElementById('status').innerText = pathEnd ? "Chemin trouvé" : "Échec - Relancez";
 
-        solve();
+        // Murs (Gris sombre)
+        const wallGeo = new THREE.BoxGeometry(0.8, 0.8, 0.8);
+        const wallMat = new THREE.MeshPhongMaterial({ color: 0x222222 });
+        const wallMesh = new THREE.InstancedMesh(wallGeo, wallMat, size**3);
+        
+        // Chemin (Néon bleu)
+        const pathMat = new THREE.MeshBasicMaterial({ color: 0x00ffff });
+        const pathMesh = new THREE.InstancedMesh(wallGeo, pathMat, size*3);
+
+        let wallIdx = 0;
+        const dummy = new THREE.Object3D();
+
+        for(let x=0; x<size; x++) {
+            for(let y=0; y<size; y++) {
+                for(let z=0; z<size; z++) {
+                    if(grid[x][y][z].isWall) {
+                        dummy.position.set(x, y, z);
+                        dummy.updateMatrix();
+                        wallMesh.setMatrixAt(wallIdx++, dummy.matrix);
+                    }
+                }
+            }
+        }
+        scene.add(wallMesh);
+
+        if(pathEnd) {
+            let curr = pathEnd;
+            let pIdx = 0;
+            while(curr) {
+                dummy.position.set(curr.x, curr.y, curr.z);
+                dummy.updateMatrix();
+                pathMesh.setMatrixAt(pIdx++, dummy.matrix);
+                curr = curr.parent;
+            }
+            pathMesh.count = pIdx;
+            scene.add(pathMesh);
+        }
+
+        // --- EFFETS ---
+        const pLight = new THREE.PointLight(0x00ffff, 500, 100);
+        pLight.position.set(size/2, size/2, size/2);
+        scene.add(pLight);
+        scene.add(new THREE.AmbientLight(0x404040));
 
         function animate() {
             requestAnimationFrame(animate);
-            controls.update();
+            const time = Date.now() * 0.001;
+            pathMesh.position.y = Math.sin(time) * 0.2; // Petit flottement du chemin
+            scene.rotation.y += 0.002;
             renderer.render(scene, camera);
         }
-
-        window.addEventListener('resize', () => {
-            camera.aspect = window.innerWidth / window.innerHeight;
-            camera.updateProjectionMatrix();
-            renderer.setSize(window.innerWidth, window.innerHeight);
-        });
-
         animate();
     </script>
 </body>
