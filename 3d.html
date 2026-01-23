@@ -1,106 +1,48 @@
 <!DOCTYPE html>
-<html lang="fr">
+<html>
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>CalcPro 3D - Mobile</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CalcPro 3D</title>
     <style>
-        body { margin: 0; background: #000; overflow: hidden; font-family: sans-serif; }
-        #hud { position: absolute; top: 10px; left: 10px; color: #00ffcc; background: rgba(0,0,0,0.7); 
-               padding: 10px; border: 1px solid #00ffcc; font-size: 12px; z-index: 10; }
-        .nav-btn { position: absolute; bottom: 20px; padding: 12px 20px; font-weight: bold; 
-                   text-decoration: none; border-radius: 5px; z-index: 10; }
-        .back { left: 20px; background: #333; color: #00ffcc; border: 1px solid #00ffcc; }
-        .regen { right: 20px; background: #00ffcc; color: #000; border: none; }
+        body { margin: 0; background-color: black; color: #00ffcc; font-family: sans-serif; text-align: center; }
+        canvas { display: block; }
+        #msg { position: absolute; top: 10px; width: 100%; pointer-events: none; }
+        .back { position: absolute; bottom: 20px; left: 20px; background: #00ffcc; color: black; padding: 10px; text-decoration: none; border-radius: 5px; font-weight: bold; }
     </style>
 </head>
 <body>
-    <div id="hud">SYSTEME A* 3D<br>Statut: <span id="status">Chargement...</span></div>
-    <a href="index.html" class="nav-btn back">RETOUR</a>
-    <button class="nav-btn regen" onclick="location.reload()">REGEN</button>
+    <div id="msg">SYSTEME 3D ACTIF</div>
+    <a href="index.html" class="back">RETOUR</a>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
 
     <script>
-        const SIZE = 10; // Réduit pour plus de fluidité sur téléphone
-        const scene = new THREE.Scene();
-        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-        const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-        renderer.setSize(window.innerWidth, window.innerHeight);
-        renderer.setPixelRatio(window.devicePixelRatio);
-        document.body.appendChild(renderer.domElement);
-
-        const controls = new THREE.OrbitControls(camera, renderer.domElement);
-        camera.position.set(15, 15, 15);
-
-        const nodes = [];
-        const group = new THREE.Group();
-        const geo = new THREE.BoxGeometry(0.6, 0.6, 0.6);
-
-        for(let x=0; x<SIZE; x++) {
-            nodes[x] = [];
-            for(let y=0; y<SIZE; y++) {
-                nodes[x][y] = [];
-                for(let z=0; z<SIZE; z++) {
-                    const wall = Math.random() < 0.2 && (x+y+z > 2);
-                    const mat = new THREE.MeshBasicMaterial({
-                        color: wall ? 0x222222 : 0x00ffcc,
-                        transparent: true,
-                        opacity: wall ? 0.5 : 0.1
-                    });
-                    const cube = new THREE.Mesh(geo, mat);
-                    cube.position.set(x, y, z);
-                    group.add(cube);
-                    nodes[x][y][z] = { x,y,z, wall, g:999, f:999, parent:null, mesh:cube };
-                }
-            }
-        }
-        scene.add(group);
-
-        function solve() {
-            let start = nodes[0][0][0], end = nodes[SIZE-1][SIZE-1][SIZE-1];
-            let open = [start]; start.g = 0;
-            while(open.length > 0) {
-                open.sort((a,b) => a.f - b.f);
-                let curr = open.shift();
-                if(curr === end) {
-                    document.getElementById('status').innerText = "PATH FOUND";
-                    while(curr) {
-                        curr.mesh.material.color.set(0xffffff);
-                        curr.mesh.material.opacity = 1;
-                        curr = curr.parent;
-                    }
-                    return;
-                }
-                [[1,0,0],[-1,0,0],[0,1,0],[0,-1,0],[0,0,1],[0,0,-1]].forEach(d => {
-                    let nx=curr.x+d[0], ny=curr.y+d[1], nz=curr.z+d[2];
-                    if(nx>=0 && nx<SIZE && ny>=0 && ny<SIZE && nz>=0 && nz<SIZE) {
-                        let nb = nodes[nx][ny][nz];
-                        if(!nb.wall && curr.g+1 < nb.g) {
-                            nb.parent = curr; nb.g = curr.g+1;
-                            nb.f = nb.g + Math.abs(nx-end.x)+Math.abs(ny-end.y)+Math.abs(nz-end.z);
-                            open.push(nb);
-                        }
-                    }
-                });
-            }
-        }
-
-        solve();
-        function animate() {
-            requestAnimationFrame(animate);
-            group.rotation.y += 0.005;
-            controls.update();
-            renderer.render(scene, camera);
-        }
-        animate();
-
-        window.addEventListener('resize', () => {
-            camera.aspect = window.innerWidth / window.innerHeight;
-            camera.updateProjectionMatrix();
+        // Test de sécurité
+        try {
+            var scene = new THREE.Scene();
+            var camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 1000);
+            var renderer = new THREE.WebGLRenderer({ antialias: true });
             renderer.setSize(window.innerWidth, window.innerHeight);
-        });
+            document.body.appendChild(renderer.domElement);
+
+            var geometry = new THREE.BoxGeometry(1, 1, 1);
+            var material = new THREE.MeshBasicMaterial({ color: 0x00ffcc, wireframe: true });
+            var cube = new THREE.Mesh(geometry, material);
+            scene.add(cube);
+
+            camera.position.z = 5;
+
+            function animate() {
+                requestAnimationFrame(animate);
+                cube.rotation.x += 0.01;
+                cube.rotation.y += 0.01;
+                renderer.render(scene, camera);
+            }
+            animate();
+        } catch (e) {
+            document.getElementById('msg').innerHTML = "Erreur : " + e.message;
+        }
     </script>
 </body>
 </html>
