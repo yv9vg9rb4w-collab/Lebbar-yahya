@@ -1,133 +1,117 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CalcPro - Biometric Scan</title>
-    <style>
-        body { margin: 0; background: #000; overflow: hidden; font-family: 'Courier New', monospace; }
-        canvas { display: block; }
-        
-        /* Interface de Scan Pro */
-        #overlay {
-            position: absolute; top: 20px; left: 20px;
-            color: #00ffcc; border-left: 3px solid #00ffcc;
-            padding: 10px 20px; background: rgba(0, 40, 40, 0.2);
-            backdrop-filter: blur(10px); pointer-events: none;
-            text-transform: uppercase; letter-spacing: 2px;
-        }
-        .loading-bar {
-            width: 150px; height: 4px; background: #003333;
-            margin-top: 10px; position: relative;
-        }
-        .progress {
-            width: 70%; height: 100%; background: #00ffcc;
-            animation: load 2s infinite;
-        }
-        @keyframes load { 0% { width: 0%; } 100% { width: 100%; } }
-
-        .btn-back {
-            position: absolute; bottom: 30px; left: 30px;
-            padding: 15px 30px; border: 1px solid #00ffcc;
-            color: #00ffcc; text-decoration: none; font-weight: bold;
-            border-radius: 5px; background: rgba(0, 255, 204, 0.1);
-        }
-    </style>
+  <meta charset="UTF-8">
+  <title>CalcPro - Calculatrice 3D</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body {
+      margin: 0;
+      background-color: #121212;
+      color: white;
+      font-family: Arial, sans-serif;
+    }
+    h1 {
+      text-align: center;
+      color: #00ffcc;
+      padding: 20px;
+    }
+    canvas {
+      display: block;
+    }
+  </style>
 </head>
 <body>
+  <h1>🧭 Calculatrice 3D</h1>
 
-    <div id="overlay">
-        <div style="font-size: 0.8em; color: #888;">Biometric.Scan_Active</div>
-        <div style="font-size: 1.2em; font-weight: bold;">Target: Locked</div>
-        <div class="loading-bar"><div class="progress"></div></div>
-    </div>
+  <!-- Import de Three.js et OrbitControls -->
+  <script src="https://cdn.jsdelivr.net/npm/three@0.152.0/build/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.152.0/examples/js/controls/OrbitControls.js"></script>
 
-    <a href="index.html" class="btn-back">EXIT_SYSTEM</a>
-    <canvas id="c"></canvas>
+  <script>
+    // Scène
+    const scene = new THREE.Scene();
 
-    <script>
-        const canvas = document.getElementById('c');
-        const ctx = canvas.getContext('2d');
-        let w, h, angle = 0;
+    // Caméra
+    const camera = new THREE.PerspectiveCamera(
+      75, window.innerWidth / window.innerHeight, 0.1, 1000
+    );
+    camera.position.set(5, 5, 10);
 
-        // Modèle simplifié de crâne (Points 3D simplifiés pour performance mobile)
-        const skullPoints = [];
-        // Création d'une forme ovoïde complexe
-        for(let i=0; i<200; i++) {
-            let u = Math.random() * Math.PI * 2;
-            let v = Math.random() * Math.PI;
-            let r = 150 + Math.sin(v*3)*20; // Déformation pour faire "tête"
-            skullPoints.push({
-                x: r * Math.sin(v) * Math.cos(u),
-                y: r * Math.sin(v) * Math.sin(u) * 1.2 - 50,
-                z: r * Math.cos(v)
-            });
-        }
+    // Rendu
+    const renderer = new THREE.WebGLRenderer({ antialias: true });
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    document.body.appendChild(renderer.domElement);
 
-        function resize() {
-            w = canvas.width = window.innerWidth;
-            h = canvas.height = window.innerHeight;
-        }
+    // Contrôles souris
+    const controls = new THREE.OrbitControls(camera, renderer.domElement);
 
-        function project(p) {
-            // Double rotation (Y et X)
-            let x1 = p.x * Math.cos(angle) - p.z * Math.sin(angle);
-            let z1 = p.x * Math.sin(angle) + p.z * Math.cos(angle);
-            let y1 = p.y * Math.cos(0.3) - z1 * Math.sin(0.3);
-            let z2 = p.y * Math.sin(0.3) + z1 * Math.cos(0.3);
+    // Lumières
+    const ambient = new THREE.AmbientLight(0x404040); // lumière douce
+    scene.add(ambient);
 
-            const scale = 500 / (z2 + 800);
-            return {
-                x: x1 * scale + w / 2,
-                y: y1 * scale + h / 2,
-                o: (z2 + 200) / 400 // Opacité basée sur la profondeur
-            };
-        }
+    const light = new THREE.PointLight(0xffffff, 1);
+    light.position.set(10, 10, 10);
+    scene.add(light);
 
-        function draw() {
-            ctx.fillStyle = "black";
-            ctx.fillRect(0, 0, w, h);
-            
-            angle += 0.015;
+    // Sol
+    const planeGeometry = new THREE.PlaneGeometry(50, 50);
+    const planeMaterial = new THREE.MeshPhongMaterial({ color: 0x555555, side: THREE.DoubleSide });
+    const plane = new THREE.Mesh(planeGeometry, planeMaterial);
+    plane.rotation.x = Math.PI / 2;
+    scene.add(plane);
 
-            // Dessin des points de données (Le crâne)
-            skullPoints.forEach((p, i) => {
-                const proj = project(p);
-                
-                // On ne dessine que si c'est devant
-                if (proj.o > 0) {
-                    ctx.fillStyle = i % 10 === 0 ? "#ff007f" : "#00ffcc";
-                    ctx.globalAlpha = proj.o;
-                    
-                    // Dessin d'un petit carré de pixel pro
-                    ctx.fillRect(proj.x, proj.y, 2, 2);
+    // Cube vert
+    const cubeGeometry = new THREE.BoxGeometry(2, 2, 2);
+    const cubeMaterial = new THREE.MeshPhongMaterial({ color: 0x00ff00 });
+    const cube = new THREE.Mesh(cubeGeometry, cubeMaterial);
+    cube.position.set(-5, 1, 0);
+    scene.add(cube);
 
-                    // Lignes de connexion aléatoires (Effet scanner)
-                    if (i % 15 === 0 && skullPoints[i+1]) {
-                        const p2 = project(skullPoints[i+1]);
-                        ctx.strokeStyle = "rgba(0, 255, 204, 0.1)";
-                        ctx.beginPath();
-                        ctx.moveTo(proj.x, proj.y);
-                        ctx.lineTo(p2.x, p2.y);
-                        ctx.stroke();
-                    }
-                }
-            });
+    // Sphère bleue
+    const sphereGeometry = new THREE.SphereGeometry(1.5, 32, 32);
+    const sphereMaterial = new THREE.MeshPhongMaterial({ color: 0x0000ff });
+    const sphere = new THREE.Mesh(sphereGeometry, sphereMaterial);
+    sphere.position.set(5, 1.5, 0);
+    scene.add(sphere);
 
-            // Effet de scan horizontal
-            ctx.strokeStyle = "rgba(0, 255, 204, 0.05)";
-            let scanY = (Math.sin(Date.now()*0.002) * h/2) + h/2;
-            ctx.beginPath();
-            ctx.moveTo(0, scanY);
-            ctx.lineTo(w, scanY);
-            ctx.stroke();
+    // Cylindre rouge
+    const cylGeometry = new THREE.CylinderGeometry(1, 1, 3, 32);
+    const cylMaterial = new THREE.MeshPhongMaterial({ color: 0xff0000 });
+    const cylinder = new THREE.Mesh(cylGeometry, cylMaterial);
+    cylinder.position.set(0, 1.5, -5);
+    scene.add(cylinder);
 
-            requestAnimationFrame(draw);
-        }
+    // Cône jaune
+    const coneGeometry = new THREE.ConeGeometry(1.5, 3, 32);
+    const coneMaterial = new THREE.MeshPhongMaterial({ color: 0xffff00 });
+    const cone = new THREE.Mesh(coneGeometry, coneMaterial);
+    cone.position.set(0, 1.5, 5);
+    scene.add(cone);
 
-        window.addEventListener('resize', resize);
-        resize();
-        draw();
-    </script>
+    // Animation
+    function animate() {
+      requestAnimationFrame(animate);
+
+      cube.rotation.x += 0.01;
+      cube.rotation.y += 0.01;
+
+      sphere.rotation.y += 0.02;
+
+      cylinder.rotation.x += 0.015;
+      cone.rotation.z += 0.02;
+
+      controls.update();
+      renderer.render(scene, camera);
+    }
+    animate();
+
+    // Ajuster la taille si la fenêtre change
+    window.addEventListener('resize', () => {
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+    });
+  </script>
 </body>
 </html>
