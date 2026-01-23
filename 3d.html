@@ -92,7 +92,9 @@ controls.enableDamping = true;
 scene.add(new THREE.AmbientLight(0xffffff,0.8));
 
 // AXES + GRILLES
-scene.add(new THREE.AxesHelper(10));
+const axes = new THREE.AxesHelper(20);
+axes.material.linewidth = 4;
+scene.add(axes);
 scene.add(new THREE.GridHelper(20,20));
 
 // POINTS
