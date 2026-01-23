@@ -3,42 +3,36 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>A* Matrix Pathfinding 3D</title>
+    <title>CalcPro - Algorithme A* 3D</title>
     <style>
-        /* Design Interface Cyberpunk */
-        body { margin: 0; background: #000; overflow: hidden; font-family: 'Courier New', monospace; }
-        #overlay {
-            position: absolute; top: 20px; left: 20px;
-            color: #00ff00; background: rgba(0, 20, 0, 0.85);
-            padding: 20px; border: 1px solid #00ff00;
-            box-shadow: 0 0 15px rgba(0, 255, 0, 0.4);
-            pointer-events: none; z-index: 10;
-        }
-        .header { font-size: 1.4em; font-weight: bold; margin-bottom: 10px; border-bottom: 1px solid #00ff00; }
-        .stat-line { margin: 5px 0; font-size: 0.9em; }
-        .highlight { color: #fff; text-shadow: 0 0 5px #fff; }
+        body { margin: 0; background: #000; overflow: hidden; font-family: 'Segoe UI', sans-serif; }
         
-        /* Bouton de commande */
-        #cmd {
-            position: absolute; bottom: 20px; right: 20px;
-            background: transparent; border: 1px solid #00ff00;
-            color: #00ff00; padding: 10px 20px; cursor: pointer;
-            text-transform: uppercase; transition: all 0.3s;
+        /* Interface superposée */
+        #interface {
+            position: absolute; top: 20px; left: 20px;
+            color: #00ffcc; background: rgba(0, 0, 0, 0.8);
+            padding: 15px; border: 1px solid #00ffcc;
+            border-radius: 8px; z-index: 10; pointer-events: none;
         }
-        #cmd:hover { background: #00ff00; color: #000; }
+        
+        .back-btn {
+            position: absolute; bottom: 20px; left: 20px;
+            background: #00ffcc; color: #000; padding: 10px 20px;
+            text-decoration: none; font-weight: bold; border-radius: 5px;
+            z-index: 10; transition: 0.3s;
+        }
+        .back-btn:hover { background: #fff; transform: scale(1.1); }
     </style>
 </head>
 <body>
 
-    <div id="overlay">
-        <div class="header">SYSTEM: A-STAR_V3</div>
-        <div class="stat-line">STATUS: <span id="status" class="highlight">INITIALIZING...</span></div>
-        <div class="stat-line">GRID_RES: <span class="highlight">15x15x15</span></div>
-        <div class="stat-line">DRONE_POS: <span id="pos" class="highlight">0, 0, 0</span></div>
-        <div class="stat-line">FPS: <span id="fps" class="highlight">60</span></div>
+    <div id="interface">
+        <h2 style="margin:0 0 10px 0;">Algorithme A* Pro</h2>
+        <div>Statut : <span id="status" style="color:white">Calcul en cours...</span></div>
+        <div style="font-size: 12px; margin-top: 10px; color: #aaa;">Clic gauche: Tourner | Molette: Zoom</div>
     </div>
 
-    <button id="cmd" onclick="location.reload()">Regenerate World</button>
+    <a href="index.html" class="back-btn">⬅ Retour au menu</a>
 
     <script type="module">
         import * as THREE from 'https://unpkg.com/three@0.160.0/build/three.module.js';
@@ -47,9 +41,8 @@
         import { RenderPass } from 'https://unpkg.com/three@0.160.0/examples/jsm/postprocessing/RenderPass.js';
         import { UnrealBloomPass } from 'https://unpkg.com/three@0.160.0/examples/jsm/postprocessing/UnrealBloomPass.js';
 
-        // --- PARAMÈTRES ---
-        const GRID_SIZE = 15;
-        const nodes = [];
+        // --- SCÈNE ---
+        const size = 12;
         const scene = new THREE.Scene();
         const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
         const renderer = new THREE.WebGLRenderer({ antialias: true });
@@ -58,122 +51,82 @@
         document.body.appendChild(renderer.domElement);
 
         const controls = new OrbitControls(camera, renderer.domElement);
-        camera.position.set(20, 20, 20);
+        camera.position.set(18, 18, 18);
 
-        // --- POST-PROCESSING (Lumière Glow) ---
+        // --- BLOOM (EFFET NÉON) ---
         const composer = new EffectComposer(renderer);
         composer.addPass(new RenderPass(scene, camera));
         const bloom = new UnrealBloomPass(new THREE.Vector2(window.innerWidth, window.innerHeight), 1.5, 0.4, 0.85);
         composer.addPass(bloom);
 
-        // --- GÉNÉRATION DE LA GRILLE ---
-        const wallGeometry = new THREE.BoxGeometry(0.8, 0.8, 0.8);
-        const wallMaterial = new THREE.MeshStandardMaterial({ color: 0x111111, metalness: 0.8, roughness: 0.2 });
-        const instancedWalls = new THREE.InstancedMesh(wallGeometry, wallMaterial, GRID_SIZE**3);
-        scene.add(instancedWalls);
-
+        // --- GRILLE ---
+        const nodes = [];
+        const wallMat = new THREE.MeshStandardMaterial({ color: 0x1a1a1a, metalness: 0.8 });
+        const wallMesh = new THREE.InstancedMesh(new THREE.BoxGeometry(0.8, 0.8, 0.8), wallMat, size**3);
+        scene.add(wallMesh);
+        
         let wallCount = 0;
         const dummy = new THREE.Object3D();
 
-        for(let x=0; x<GRID_SIZE; x++) {
+        for(let x=0; x<size; x++) {
             nodes[x] = [];
-            for(let y=0; y<GRID_SIZE; y++) {
+            for(let y=0; y<size; y++) {
                 nodes[x][y] = [];
-                for(let z=0; z<GRID_SIZE; z++) {
-                    const isWall = Math.random() < 0.25 && (x+y+z > 2) && (x+y+z < (GRID_SIZE-1)*3 - 2);
-                    nodes[x][y][z] = { x, y, z, isWall, g: Infinity, h: 0, f: Infinity, parent: null };
-                    
+                for(let z=0; z<size; z++) {
+                    const isWall = Math.random() < 0.25 && (x+y+z > 2) && (x+y+z < (size-1)*3-2);
+                    nodes[x][y][z] = { x, y, z, isWall, g: Infinity, f: Infinity, parent: null };
                     if(isWall) {
-                        dummy.position.set(x, y, z);
-                        dummy.updateMatrix();
-                        instancedWalls.setMatrixAt(wallCount++, dummy.matrix);
+                        dummy.position.set(x, y, z); dummy.updateMatrix();
+                        wallMesh.setMatrixAt(wallCount++, dummy.matrix);
                     }
                 }
             }
         }
 
-        // --- ALGORITHME A* ---
-        function findPath() {
-            let start = nodes[0][0][0];
-            let end = nodes[GRID_SIZE-1][GRID_SIZE-1][GRID_SIZE-1];
-            let openSet = [start];
-            start.g = 0;
-
-            while(openSet.length > 0) {
-                openSet.sort((a, b) => a.f - b.f);
-                let current = openSet.shift();
-
-                if(current === end) {
+        // --- ALGO A* ---
+        function aStar() {
+            let start = nodes[0][0][0], end = nodes[size-1][size-1][size-1];
+            let open = [start]; start.g = 0;
+            while(open.length > 0) {
+                open.sort((a,b) => a.f - b.f);
+                let curr = open.shift();
+                if(curr === end) {
                     let path = [];
-                    while(current) {
-                        path.push(new THREE.Vector3(current.x, current.y, current.z));
-                        current = current.parent;
-                    }
+                    while(curr) { path.push(new THREE.Vector3(curr.x, curr.y, curr.z)); curr = curr.parent; }
                     return path.reverse();
                 }
-
-                const dirs = [[1,0,0],[-1,0,0],[0,1,0],[0,-1,0],[0,0,1],[0,0,-1]];
-                for(let d of dirs) {
-                    let nx = current.x+d[0], ny = current.y+d[1], nz = current.z+d[2];
-                    if(nx>=0 && nx<GRID_SIZE && ny>=0 && ny<GRID_SIZE && nz>=0 && nz<GRID_SIZE) {
-                        let neighbor = nodes[nx][ny][nz];
-                        if(neighbor.isWall) continue;
-                        
-                        let tempG = current.g + 1;
-                        if(tempG < neighbor.g) {
-                            neighbor.parent = current;
-                            neighbor.g = tempG;
-                            neighbor.h = Math.abs(nx-end.x) + Math.abs(ny-end.y) + Math.abs(nz-end.z);
-                            neighbor.f = neighbor.g + neighbor.h;
-                            if(!openSet.includes(neighbor)) openSet.push(neighbor);
+                [[1,0,0],[-1,0,0],[0,1,0],[0,-1,0],[0,0,1],[0,0,-1]].forEach(d => {
+                    let nx=curr.x+d[0], ny=curr.y+d[1], nz=curr.z+d[2];
+                    if(nx>=0 && nx<size && ny>=0 && ny<size && nz>=0 && nz<size) {
+                        let nb = nodes[nx][ny][nz];
+                        if(!nb.isWall && curr.g+1 < nb.g) {
+                            nb.parent = curr; nb.g = curr.g+1;
+                            nb.f = nb.g + (Math.abs(nx-end.x)+Math.abs(ny-end.y)+Math.abs(nz-end.z));
+                            if(!open.includes(nb)) open.push(nb);
                         }
                     }
-                }
+                });
             }
             return null;
         }
 
-        const path = findPath();
-
-        // --- AFFICHAGE DU CHEMIN ET DRONE ---
-        if(path) {
-            document.getElementById('status').innerText = "PATH_FOUND";
-            
-            // Ligne du chemin
-            const curve = new THREE.CatmullRomCurve3(path);
-            const tubeGeo = new THREE.TubeGeometry(curve, 100, 0.06, 8, false);
-            const tubeMat = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
-            scene.add(new THREE.Mesh(tubeGeo, tubeMat));
-
-            // Le Drone (Sphère lumineuse)
-            const drone = new THREE.Group();
-            const droneCore = new THREE.Mesh(new THREE.SphereGeometry(0.3), new THREE.MeshBasicMaterial({color: 0xffffff}));
-            const light = new THREE.PointLight(0x00ff00, 10, 10);
-            drone.add(droneCore, light);
-            scene.add(drone);
-
-            let progress = 0;
-            function move() {
-                progress += 0.0015;
-                if(progress > 1) progress = 0;
-                const p = curve.getPointAt(progress);
-                drone.position.copy(p);
-                document.getElementById('pos').innerText = `${p.x.toFixed(1)}, ${p.y.toFixed(1)}, ${p.z.toFixed(1)}`;
-                requestAnimationFrame(move);
-            }
-            move();
+        const result = aStar();
+        if(result) {
+            document.getElementById('status').innerText = "Chemin trouvé !";
+            const curve = new THREE.CatmullRomCurve3(result);
+            const tube = new THREE.Mesh(new THREE.TubeGeometry(curve, 64, 0.07, 8, false), new THREE.MeshBasicMaterial({ color: 0x00ffcc }));
+            scene.add(tube);
         } else {
-            document.getElementById('status').innerText = "NO_PATH_POSSIBLE";
+            document.getElementById('status').innerText = "Bloqué !";
             document.getElementById('status').style.color = "red";
         }
 
-        // --- LUMIÈRES & RENDU ---
-        scene.add(new THREE.AmbientLight(0x202020));
-        
+        scene.add(new THREE.AmbientLight(0xffffff, 0.3));
+
         function animate() {
             requestAnimationFrame(animate);
+            scene.rotation.y += 0.001;
             controls.update();
-            scene.rotation.y += 0.0005;
             composer.render();
         }
         animate();
