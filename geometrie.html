@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
-<title>CalcPro – Géométrie ULTRA</title>
+<title>CalcPro – Géométrie Vecteurs Pro</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <script src="https://cdn.jsdelivr.net/npm/mathjs@11.11.0/lib/browser/math.js"></script>
@@ -11,108 +11,134 @@
 <style>
 body{margin:0;background:#121212;color:white;font-family:Arial,sans-serif;}
 header{text-align:center;padding:20px;font-size:24px;color:#60a5fa;font-weight:bold;}
-.container{max-width:900px;margin:auto;background:#1e1e2f;padding:20px;border-radius:15px;box-shadow:0 0 25px rgba(0,0,0,.6);}
-input, select{background:#0b0e1a;color:#60a5fa;border:none;padding:8px;border-radius:6px;margin:5px;font-size:15px;width:80px;}
-button{padding:10px 15px;margin:5px;font-size:15px;border:none;border-radius:8px;background:#2563eb;color:white;cursor:pointer;}
+.container{max-width:950px;margin:auto;background:#1e1e2f;padding:20px;border-radius:15px;box-shadow:0 0 25px rgba(0,0,0,.6);}
+input{background:#0b0e1a;color:#60a5fa;border:none;padding:8px;border-radius:6px;margin:3px;width:60px;font-size:14px;}
+button{padding:10px 15px;margin:5px;font-size:14px;border:none;border-radius:8px;background:#2563eb;color:white;cursor:pointer;}
 button:hover{background:#3b82f6;}
 .result{margin-top:15px;background:#0b0e1a;padding:15px;border-radius:10px;color:#60a5fa;min-height:50px;font-size:16px;}
 canvas{width:100%;height:400px;display:block;margin-top:20px;border-radius:10px;}
+h3{margin-bottom:5px;}
+.flex-row{display:flex;flex-wrap:wrap;align-items:center;margin-bottom:10px;}
+.flex-row div{margin-right:15px;}
 </style>
 </head>
 
 <body>
-<header>📐 Calculatrice Géométrie ULTRA</header>
-
+<header>📐 Géométrie Vecteurs Pro</header>
 <div class="container">
-  <h3>Distances & Angles</h3>
-  <div>
-    Point A: X <input id="ax" type="number"> Y <input id="ay" type="number"> Z <input id="az" type="number"><br>
-    Point B: X <input id="bx" type="number"> Y <input id="by" type="number"> Z <input id="bz" type="number"><br>
-    <button id="btnDist">Distance AB</button>
-    <button id="btnVect">Vecteur AB</button>
-  </div>
 
-  <div class="result" id="result">Résultat…</div>
+<h3>Points</h3>
+<div class="flex-row">
+<div>A: X <input id="ax" type="number"> Y <input id="ay" type="number"> Z <input id="az" type="number"></div>
+<div>B: X <input id="bx" type="number"> Y <input id="by" type="number"> Z <input id="bz" type="number"></div>
+<div>C: X <input id="cx" type="number"> Y <input id="cy" type="number"> Z <input id="cz" type="number"></div>
+</div>
 
-  <h3>Visualisation 3D</h3>
-  <canvas id="canvas3d"></canvas>
+<h3>Calculs vecteurs</h3>
+<div class="flex-row">
+<button id="btnAB">Vecteur AB</button>
+<button id="btnAC">Vecteur AC</button>
+<button id="btnNormAB">Norme AB</button>
+<button id="btnNormAC">Norme AC</button>
+<button id="btnDot">AB • AC</button>
+<button id="btnCross">AB × AC</button>
+<button id="btnAngle">Angle AB & AC (°)</button>
+</div>
+
+<div class="result" id="result">Résultat…</div>
+
+<h3>Visualisation 3D</h3>
+<canvas id="canvas3d"></canvas>
+
 </div>
 
 <script>
-// --- FONCTIONS CALCUL ---
-function distance3D(A,B){
-  return Math.sqrt(Math.pow(B[0]-A[0],2)+Math.pow(B[1]-A[1],2)+Math.pow(B[2]-A[2],2));
-}
-function vecteur3D(A,B){
-  return [B[0]-A[0], B[1]-A[1], B[2]-A[2]];
+// --- Fonctions géométrie ---
+function getPoints(){
+  const A=[Number(ax.value),Number(ay.value),Number(az.value)];
+  const B=[Number(bx.value),Number(by.value),Number(bz.value)];
+  const C=[Number(cx.value),Number(cy.value),Number(cz.value)];
+  return {A,B,C};
 }
 
-// --- EVENT BUTTONS ---
-document.getElementById("btnDist").addEventListener("click",()=>{
-  try{
-    const A = [Number(ax.value), Number(ay.value), Number(az.value)];
-    const B = [Number(bx.value), Number(by.value), Number(bz.value)];
-    const d = distance3D(A,B).toFixed(4);
-    result.innerHTML = `Distance AB = <b>${d}</b>`;
-  }catch{result.innerText="❌ Vérifie les coordonnées";}
+function vecteur(P,Q){
+  return math.subtract(Q,P);
+}
+function norme(V){return math.sqrt(math.dot(V,V));}
+function dot(V1,V2){return math.dot(V1,V2);}
+function cross(V1,V2){return math.cross(V1,V2);}
+function angleDeg(V1,V2){return math.acos(math.dot(V1,V2)/(norme(V1)*norme(V2)))*180/math.PI;}
+
+// --- Event boutons ---
+const result=document.getElementById("result");
+
+document.getElementById("btnAB").addEventListener("click",()=>{
+  const {A,B}=getPoints();
+  result.innerHTML="Vecteur AB = ["+vecteur(A,B).map(x=>x.toFixed(4))+"]";
+});
+document.getElementById("btnAC").addEventListener("click",()=>{
+  const {A,C}=getPoints();
+  result.innerHTML="Vecteur AC = ["+vecteur(A,C).map(x=>x.toFixed(4))+"]";
+});
+document.getElementById("btnNormAB").addEventListener("click",()=>{
+  const {A,B}=getPoints();
+  result.innerHTML="Norme ||AB|| = "+norme(vecteur(A,B)).toFixed(4);
+});
+document.getElementById("btnNormAC").addEventListener("click",()=>{
+  const {A,C}=getPoints();
+  result.innerHTML="Norme ||AC|| = "+norme(vecteur(A,C)).toFixed(4);
+});
+document.getElementById("btnDot").addEventListener("click",()=>{
+  const {A,B,C}=getPoints();
+  result.innerHTML="Produit scalaire AB • AC = "+dot(vecteur(A,B),vecteur(A,C)).toFixed(4);
+});
+document.getElementById("btnCross").addEventListener("click",()=>{
+  const {A,B,C}=getPoints();
+  result.innerHTML="Produit vectoriel AB × AC = ["+cross(vecteur(A,B),vecteur(A,C)).map(x=>x.toFixed(4))+"]";
+});
+document.getElementById("btnAngle").addEventListener("click",()=>{
+  const {A,B,C}=getPoints();
+  result.innerHTML="Angle entre AB & AC = "+angleDeg(vecteur(A,B),vecteur(A,C)).toFixed(2)+"°";
 });
 
-document.getElementById("btnVect").addEventListener("click",()=>{
-  try{
-    const A = [Number(ax.value), Number(ay.value), Number(az.value)];
-    const B = [Number(bx.value), Number(by.value), Number(bz.value)];
-    const v = vecteur3D(A,B).map(n=>n.toFixed(4));
-    result.innerHTML = `Vecteur AB = [${v}]`;
-  }catch{result.innerText="❌ Vérifie les coordonnées";}
-});
-
-// --- THREE.JS 3D CANVAS ---
-const canvas = document.getElementById("canvas3d");
-const scene = new THREE.Scene();
-scene.background = new THREE.Color(0x121212);
-const camera = new THREE.PerspectiveCamera(75, canvas.clientWidth/canvas.clientHeight,0.1,1000);
-const renderer = new THREE.WebGLRenderer({canvas});
+// --- THREE.JS 3D ---
+const canvas=document.getElementById("canvas3d");
+const scene=new THREE.Scene();
+scene.background=new THREE.Color(0x121212);
+const camera=new THREE.PerspectiveCamera(75,canvas.clientWidth/canvas.clientHeight,0.1,1000);
+const renderer=new THREE.WebGLRenderer({canvas});
 renderer.setSize(canvas.clientWidth,canvas.clientHeight);
 
-const axesHelper = new THREE.AxesHelper(5);
+const axesHelper=new THREE.AxesHelper(5);
 scene.add(axesHelper);
 
-const geometryA = new THREE.SphereGeometry(0.1,16,16);
-const materialA = new THREE.MeshBasicMaterial({color:0xff0000});
-const sphereA = new THREE.Mesh(geometryA,materialA);
-scene.add(sphereA);
+// sphères pour A,B,C
+function createSphere(color){return new THREE.Mesh(new THREE.SphereGeometry(0.1,16,16),new THREE.MeshBasicMaterial({color}))}
+const sphereA=createSphere(0xff0000), sphereB=createSphere(0x00ff00), sphereC=createSphere(0x0000ff);
+scene.add(sphereA,sphereB,sphereC);
 
-const geometryB = new THREE.SphereGeometry(0.1,16,16);
-const materialB = new THREE.MeshBasicMaterial({color:0x00ff00});
-const sphereB = new THREE.Mesh(geometryB,materialB);
-scene.add(sphereB);
-
-const lineMaterial = new THREE.LineBasicMaterial({color:0xffff00});
-let line;
-
+let lines=[];
 function update3D(){
-  const A = [Number(ax.value), Number(ay.value), Number(az.value)];
-  const B = [Number(bx.value), Number(by.value), Number(bz.value)];
+  const {A,B,C}=getPoints();
   sphereA.position.set(...A);
   sphereB.position.set(...B);
-  if(line) scene.remove(line);
-  const points = [];
-  points.push(new THREE.Vector3(...A));
-  points.push(new THREE.Vector3(...B));
-  const geometryLine = new THREE.BufferGeometry().setFromPoints(points);
-  line = new THREE.Line(geometryLine,lineMaterial);
-  scene.add(line);
+  sphereC.position.set(...C);
+  // supprimer anciennes lignes
+  lines.forEach(l=>scene.remove(l));
+  lines=[];
+  function addLine(P,Q,color){
+    const points=[new THREE.Vector3(...P),new THREE.Vector3(...Q)];
+    const line=new THREE.Line(new THREE.BufferGeometry().setFromPoints(points),new THREE.LineBasicMaterial({color}));
+    scene.add(line); lines.push(line);
+  }
+  addLine(A,B,0xffff00); // AB jaune
+  addLine(A,C,0xff00ff); // AC magenta
+  addLine(B,C,0x00ffff); // BC cyan
 }
-["ax","ay","az","bx","by","bz"].forEach(id=>{
-  document.getElementById(id).addEventListener("input",update3D);
-});
+["ax","ay","az","bx","by","bz","cx","cy","cz"].forEach(id=>document.getElementById(id).addEventListener("input",update3D));
 
-camera.position.z = 10;
-
-function animate(){
-  requestAnimationFrame(animate);
-  renderer.render(scene,camera);
-}
+camera.position.z=8;
+function animate(){requestAnimationFrame(animate);renderer.render(scene,camera);}
 animate();
 </script>
 </body>
