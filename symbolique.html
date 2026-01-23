@@ -1,230 +1,146 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CalcPro - Symbolic OS v3.0</title>
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=JetBrains+Mono&display=swap" rel="stylesheet">
-    <style>
-        :root {
-            --neon-blue: #00d2ff;
-            --neon-purple: #9d50bb;
-            --neon-pink: #ff007f;
-            --bg-dark: #050505;
-            --glass: rgba(255, 255, 255, 0.03);
-        }
+<meta charset="UTF-8">
+<title>Calcul Symbolique</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/11.9.1/math.min.js"></script>
+<style>
+  body {
+    background-color: #121212;
+    color: white;
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 20px;
+  }
 
-        body {
-            margin: 0;
-            background: radial-gradient(circle at center, #111 0%, #000 100%);
-            color: #fff;
-            font-family: 'JetBrains Mono', monospace;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            min-height: 100vh;
-            padding: 10px;
-        }
+  h1 {
+    text-align: center;
+    color: #00ffcc;
+  }
 
-        /* Panneau Principal Pro Max */
-        .main-container {
-            width: 100%;
-            max-width: 450px;
-            background: var(--glass);
-            backdrop-filter: blur(25px);
-            -webkit-backdrop-filter: blur(25px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 30px;
-            padding: 40px 25px;
-            box-shadow: 0 50px 100px rgba(0,0,0,0.9);
-            position: relative;
-            text-align: center;
-            overflow: hidden;
-        }
+  input {
+    width: 100%;
+    padding: 15px;
+    font-size: 18px;
+    border-radius: 10px;
+    border: none;
+    margin-bottom: 15px;
+    background: #1e1e1e;
+    color: #00ffcc;
+    text-align: center;
+  }
 
-        /* Effet de lueur en fond */
-        .main-container::after {
-            content: '';
-            position: absolute;
-            top: -50%; left: -50%;
-            width: 200%; height: 200%;
-            background: radial-gradient(circle, rgba(0, 210, 255, 0.05) 0%, transparent 50%);
-            pointer-events: none;
-        }
+  .buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    justify-content: center;
+    margin-bottom: 20px;
+  }
 
-        h1 {
-            font-family: 'Orbitron', sans-serif;
-            font-size: 1.2rem;
-            letter-spacing: 6px;
-            color: var(--neon-blue);
-            margin-bottom: 30px;
-            text-shadow: 0 0 15px rgba(0, 210, 255, 0.5);
-        }
+  button {
+    padding: 12px 18px;
+    font-size: 16px;
+    border-radius: 10px;
+    border: none;
+    cursor: pointer;
+    font-weight: bold;
+    color: #121212;
+    background: linear-gradient(45deg, #00ffcc, #00ccff);
+    transition: 0.2s;
+  }
 
-        /* Champ de saisie stylisé */
-        .input-wrapper {
-            position: relative;
-            margin-bottom: 30px;
-        }
+  button:hover {
+    transform: scale(1.05);
+  }
 
-        input {
-            width: 100%;
-            background: rgba(0, 0, 0, 0.6);
-            border: 1px solid var(--neon-purple);
-            border-radius: 15px;
-            padding: 20px;
-            color: #00ffcc;
-            font-size: 1.1rem;
-            outline: none;
-            box-sizing: border-box;
-            transition: 0.3s;
-            text-align: center;
-            box-shadow: inset 0 0 10px rgba(157, 80, 187, 0.2);
-        }
-
-        input:focus {
-            border-color: #fff;
-            box-shadow: 0 0 25px rgba(0, 210, 255, 0.3);
-        }
-
-        /* Grille de boutons Pro */
-        .button-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 15px;
-        }
-
-        button {
-            padding: 15px;
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            color: #fff;
-            border-radius: 12px;
-            font-family: 'Orbitron', sans-serif;
-            font-size: 0.7rem;
-            font-weight: bold;
-            letter-spacing: 1px;
-            cursor: pointer;
-            transition: 0.2s all;
-            text-transform: uppercase;
-        }
-
-        button:hover {
-            background: rgba(255, 255, 255, 0.1);
-            border-color: var(--neon-blue);
-            color: var(--neon-blue);
-            transform: translateY(-2px);
-        }
-
-        button:active {
-            transform: scale(0.95);
-        }
-
-        /* Couleurs spécifiques pour les fonctions mathématiques */
-        .btn-math { border-color: var(--neon-pink); color: var(--neon-pink); }
-        .btn-calc { border-color: var(--neon-blue); color: var(--neon-blue); }
-
-        /* Zone de Résultat Holographique */
-        .result-area {
-            margin-top: 35px;
-            padding: 25px;
-            background: rgba(0, 0, 0, 0.5);
-            border-radius: 20px;
-            min-height: 80px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.6rem;
-            color: #fff;
-            border: 1px solid rgba(255, 255, 255, 0.05);
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-            word-break: break-all;
-        }
-
-        .exit-link {
-            margin-top: 40px;
-            text-decoration: none;
-            color: #444;
-            font-size: 0.7rem;
-            letter-spacing: 3px;
-            transition: 0.3s;
-        }
-
-        .exit-link:hover {
-            color: var(--neon-pink);
-        }
-    </style>
+  #result {
+    background: #1e1e1e;
+    padding: 15px;
+    border-radius: 12px;
+    min-height: 50px;
+    font-size: 18px;
+    color: #00ffcc;
+    word-wrap: break-word;
+  }
+</style>
 </head>
 <body>
 
-    <div class="main-container">
-        <h1>SYMBOLIC_OS</h1>
-        
-        <div class="input-wrapper">
-            <input type="text" id="mathInput" placeholder="Tapez l'expression..." spellcheck="false">
-        </div>
+<h1>Calcul Symbolique</h1>
+<input type="text" id="expr" placeholder="Entrez une expression, ex: x^3+3*x^2+2*x">
 
-        <div class="button-grid">
-            <button class="btn-math" onclick="process('factor')">Factoriser</button>
-            <button class="btn-math" onclick="process('expand')">Développer</button>
-            
-            <button class="btn-calc" onclick="process('simplify')">Simplifier</button>
-            <button class="btn-calc" onclick="process('roots')">Résoudre</button>
-            
-            <button onclick="process('d')">Dériver (x)</button>
-            <button onclick="process('integral')">Intégrer (x)</button>
-        </div>
+<div class="buttons">
+  <button onclick="simplifier()">Simplifier</button>
+  <button onclick="derivee()">Dériver</button>
+  <button onclick="integrale()">Intégrer</button>
+  <button onclick="factoriser()">Factoriser</button>
+  <button onclick="developper()">Développer</button>
+  <button onclick="resoudre()">Résoudre =0</button>
+</div>
 
-        <div class="result-area" id="resultDisplay">
-            <span style="color: #333;">_READY</span>
-        </div>
-    </div>
+<div id="result">Résultat ici...</div>
 
-    <a href="index.html" class="exit-link">TERMINER_SESSION</a>
+<script>
+const resultDiv = document.getElementById('result');
+const exprInput = document.getElementById('expr');
 
-    <script src="https://cdn.jsdelivr.net/npm/algebrite@1.4.0/dist/algebrite.bundle-for-browser.min.js"></script>
+function simplifier() {
+  try {
+    const simplified = math.simplify(exprInput.value).toString();
+    resultDiv.innerHTML = "Simplifié : " + simplified;
+  } catch(e) {
+    resultDiv.innerHTML = "Erreur : " + e.message;
+  }
+}
 
-    <script>
-        const inputField = document.getElementById('mathInput');
-        const display = document.getElementById('resultDisplay');
+function derivee() {
+  try {
+    const d = math.derivative(exprInput.value, 'x').toString();
+    resultDiv.innerHTML = "Dérivée : " + d;
+  } catch(e) {
+    resultDiv.innerHTML = "Erreur : " + e.message;
+  }
+}
 
-        function process(type) {
-            let query = inputField.value.trim();
-            if (!query) {
-                display.innerHTML = '<span style="color: #ff4444;">VIDE</span>';
-                return;
-            }
+function integrale() {
+  try {
+    const integral = math.integral(exprInput.value, 'x').toString();
+    resultDiv.innerHTML = "Intégrale : " + integral + " + C";
+  } catch(e) {
+    resultDiv.innerHTML = "Erreur : " + e.message;
+  }
+}
 
-            try {
-                let formula;
-                // On prépare la commande pour le moteur Algebrite
-                switch(type) {
-                    case 'factor': formula = `factor(${query})`; break;
-                    case 'expand': formula = `expand(${query})`; break;
-                    case 'simplify': formula = `simplify(${query})`; break;
-                    case 'd': formula = `d(${query}, x)`; break;
-                    case 'integral': formula = `integral(${query}, x)`; break;
-                    case 'roots': formula = `roots(${query})`; break;
-                    default: formula = query;
-                }
+function factoriser() {
+  try {
+    const f = math.factor(exprInput.value).toString();
+    resultDiv.innerHTML = "Factorisé : " + f;
+  } catch(e) {
+    resultDiv.innerHTML = "Erreur : " + e.message;
+  }
+}
 
-                // Exécution du calcul
-                const result = Algebrite.run(formula);
-                
-                // Affichage du résultat
-                display.innerText = result.toString();
-                display.style.color = "#00ffcc";
-            } catch (error) {
-                display.innerText = "ERREUR_SYNTAXE";
-                display.style.color = "#ff4444";
-            }
-        }
+function developper() {
+  try {
+    const exp = math.expand(exprInput.value).toString();
+    resultDiv.innerHTML = "Développé : " + exp;
+  } catch(e) {
+    resultDiv.innerHTML = "Erreur : " + e.message;
+  }
+}
 
-        // Support de la touche Entrée
-        inputField.addEventListener("keypress", (e) => {
-            if (e.key === "Enter") process('simplify');
-        });
-    </script>
+function resoudre() {
+  try {
+    const eq = math.parse(exprInput.value + "=0");
+    const solutions = math.solve(eq, 'x');
+    resultDiv.innerHTML = "Solutions : " + solutions.join(', ');
+  } catch(e) {
+    resultDiv.innerHTML = "Erreur : " + e.message;
+  }
+}
+</script>
+
 </body>
 </html>
