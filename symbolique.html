@@ -1,136 +1,230 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Calcul Symbolique Supérieur</title>
-  <!-- Math.js library -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/11.9.1/math.min.js"></script>
-  <!-- Plotly for graph -->
-  <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      background: #1e1e1e;
-      color: #fff;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      padding: 20px;
-    }
-    h1 {
-      color: #00ffcc;
-    }
-    input, button {
-      font-size: 16px;
-      padding: 10px;
-      margin: 5px;
-      border-radius: 6px;
-      border: none;
-    }
-    input {
-      width: 300px;
-    }
-    button {
-      background: #00ffcc;
-      color: #000;
-      cursor: pointer;
-      font-weight: bold;
-    }
-    #result {
-      margin-top: 20px;
-      background: #333;
-      padding: 15px;
-      border-radius: 10px;
-      width: 90%;
-      max-width: 500px;
-      word-wrap: break-word;
-    }
-    #graph {
-      margin-top: 30px;
-      width: 90%;
-      max-width: 600px;
-      height: 400px;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CalcPro - Symbolic OS v3.0</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=JetBrains+Mono&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --neon-blue: #00d2ff;
+            --neon-purple: #9d50bb;
+            --neon-pink: #ff007f;
+            --bg-dark: #050505;
+            --glass: rgba(255, 255, 255, 0.03);
+        }
+
+        body {
+            margin: 0;
+            background: radial-gradient(circle at center, #111 0%, #000 100%);
+            color: #fff;
+            font-family: 'JetBrains Mono', monospace;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 10px;
+        }
+
+        /* Panneau Principal Pro Max */
+        .main-container {
+            width: 100%;
+            max-width: 450px;
+            background: var(--glass);
+            backdrop-filter: blur(25px);
+            -webkit-backdrop-filter: blur(25px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 30px;
+            padding: 40px 25px;
+            box-shadow: 0 50px 100px rgba(0,0,0,0.9);
+            position: relative;
+            text-align: center;
+            overflow: hidden;
+        }
+
+        /* Effet de lueur en fond */
+        .main-container::after {
+            content: '';
+            position: absolute;
+            top: -50%; left: -50%;
+            width: 200%; height: 200%;
+            background: radial-gradient(circle, rgba(0, 210, 255, 0.05) 0%, transparent 50%);
+            pointer-events: none;
+        }
+
+        h1 {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.2rem;
+            letter-spacing: 6px;
+            color: var(--neon-blue);
+            margin-bottom: 30px;
+            text-shadow: 0 0 15px rgba(0, 210, 255, 0.5);
+        }
+
+        /* Champ de saisie stylisé */
+        .input-wrapper {
+            position: relative;
+            margin-bottom: 30px;
+        }
+
+        input {
+            width: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            border: 1px solid var(--neon-purple);
+            border-radius: 15px;
+            padding: 20px;
+            color: #00ffcc;
+            font-size: 1.1rem;
+            outline: none;
+            box-sizing: border-box;
+            transition: 0.3s;
+            text-align: center;
+            box-shadow: inset 0 0 10px rgba(157, 80, 187, 0.2);
+        }
+
+        input:focus {
+            border-color: #fff;
+            box-shadow: 0 0 25px rgba(0, 210, 255, 0.3);
+        }
+
+        /* Grille de boutons Pro */
+        .button-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        button {
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: #fff;
+            border-radius: 12px;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 0.7rem;
+            font-weight: bold;
+            letter-spacing: 1px;
+            cursor: pointer;
+            transition: 0.2s all;
+            text-transform: uppercase;
+        }
+
+        button:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: var(--neon-blue);
+            color: var(--neon-blue);
+            transform: translateY(-2px);
+        }
+
+        button:active {
+            transform: scale(0.95);
+        }
+
+        /* Couleurs spécifiques pour les fonctions mathématiques */
+        .btn-math { border-color: var(--neon-pink); color: var(--neon-pink); }
+        .btn-calc { border-color: var(--neon-blue); color: var(--neon-blue); }
+
+        /* Zone de Résultat Holographique */
+        .result-area {
+            margin-top: 35px;
+            padding: 25px;
+            background: rgba(0, 0, 0, 0.5);
+            border-radius: 20px;
+            min-height: 80px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.6rem;
+            color: #fff;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            word-break: break-all;
+        }
+
+        .exit-link {
+            margin-top: 40px;
+            text-decoration: none;
+            color: #444;
+            font-size: 0.7rem;
+            letter-spacing: 3px;
+            transition: 0.3s;
+        }
+
+        .exit-link:hover {
+            color: var(--neon-pink);
+        }
+    </style>
 </head>
 <body>
-  <h1>Calcul Symbolique Supérieur</h1>
 
-  <input type="text" id="expression" placeholder="Entrez une expression, ex: x^2 + 3*x">
-  <br>
-  <button onclick="simplifier()">Simplifier</button>
-  <button onclick="derivee()">Dériver</button>
-  <button onclick="integrale()">Intégrer</button>
-  <button onclick="resoudre()">Résoudre = 0</button>
-  <button onclick="tracer()">Tracer</button>
+    <div class="main-container">
+        <h1>SYMBOLIC_OS</h1>
+        
+        <div class="input-wrapper">
+            <input type="text" id="mathInput" placeholder="Tapez l'expression..." spellcheck="false">
+        </div>
 
-  <div id="result">Résultat ici...</div>
-  <div id="graph"></div>
+        <div class="button-grid">
+            <button class="btn-math" onclick="process('factor')">Factoriser</button>
+            <button class="btn-math" onclick="process('expand')">Développer</button>
+            
+            <button class="btn-calc" onclick="process('simplify')">Simplifier</button>
+            <button class="btn-calc" onclick="process('roots')">Résoudre</button>
+            
+            <button onclick="process('d')">Dériver (x)</button>
+            <button onclick="process('integral')">Intégrer (x)</button>
+        </div>
 
-  <script>
-    const resultDiv = document.getElementById('result');
+        <div class="result-area" id="resultDisplay">
+            <span style="color: #333;">_READY</span>
+        </div>
+    </div>
 
-    function simplifier() {
-      const expr = document.getElementById('expression').value;
-      try {
-        const simplified = math.simplify(expr).toString();
-        resultDiv.innerHTML = "Simplifié : " + simplified;
-      } catch (e) {
-        resultDiv.innerHTML = "Erreur : " + e.message;
-      }
-    }
+    <a href="index.html" class="exit-link">TERMINER_SESSION</a>
 
-    function derivee() {
-      const expr = document.getElementById('expression').value;
-      try {
-        const d = math.derivative(expr, 'x').toString();
-        resultDiv.innerHTML = "Dérivée : " + d;
-      } catch (e) {
-        resultDiv.innerHTML = "Erreur : " + e.message;
-      }
-    }
+    <script src="https://cdn.jsdelivr.net/npm/algebrite@1.4.0/dist/algebrite.bundle-for-browser.min.js"></script>
 
-    function integrale() {
-      const expr = document.getElementById('expression').value;
-      try {
-        // Intégrale symbolique simple (math.js support limité)
-        const integral = math.integral(expr, 'x').toString();
-        resultDiv.innerHTML = "Intégrale : " + integral + " + C";
-      } catch (e) {
-        resultDiv.innerHTML = "Erreur : " + e.message;
-      }
-    }
+    <script>
+        const inputField = document.getElementById('mathInput');
+        const display = document.getElementById('resultDisplay');
 
-    function resoudre() {
-      const expr = document.getElementById('expression').value;
-      try {
-        const eq = math.parse(expr + '=0');
-        const solutions = math.solve(eq, 'x');
-        resultDiv.innerHTML = "Solutions : " + solutions.join(', ');
-      } catch (e) {
-        resultDiv.innerHTML = "Erreur : " + e.message;
-      }
-    }
+        function process(type) {
+            let query = inputField.value.trim();
+            if (!query) {
+                display.innerHTML = '<span style="color: #ff4444;">VIDE</span>';
+                return;
+            }
 
-    function tracer() {
-      const expr = document.getElementById('expression').value;
-      try {
-        const f = math.compile(expr);
-        const xValues = math.range(-10, 10, 0.1).toArray();
-        const yValues = xValues.map(x => f.evaluate({x: x}));
-        Plotly.newPlot('graph', [{
-          x: xValues,
-          y: yValues,
-          type: 'scatter',
-          mode: 'lines',
-          line: {color: '#00ffcc'}
-        }], {margin: {t: 0}});
-        resultDiv.innerHTML = "Graphique tracé !";
-      } catch (e) {
-        resultDiv.innerHTML = "Erreur : " + e.message;
-      }
-    }
-  </script>
+            try {
+                let formula;
+                // On prépare la commande pour le moteur Algebrite
+                switch(type) {
+                    case 'factor': formula = `factor(${query})`; break;
+                    case 'expand': formula = `expand(${query})`; break;
+                    case 'simplify': formula = `simplify(${query})`; break;
+                    case 'd': formula = `d(${query}, x)`; break;
+                    case 'integral': formula = `integral(${query}, x)`; break;
+                    case 'roots': formula = `roots(${query})`; break;
+                    default: formula = query;
+                }
+
+                // Exécution du calcul
+                const result = Algebrite.run(formula);
+                
+                // Affichage du résultat
+                display.innerText = result.toString();
+                display.style.color = "#00ffcc";
+            } catch (error) {
+                display.innerText = "ERREUR_SYNTAXE";
+                display.style.color = "#ff4444";
+            }
+        }
+
+        // Support de la touche Entrée
+        inputField.addEventListener("keypress", (e) => {
+            if (e.key === "Enter") process('simplify');
+        });
+    </script>
 </body>
 </html>
