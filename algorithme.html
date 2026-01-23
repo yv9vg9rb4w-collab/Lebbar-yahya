@@ -2,98 +2,59 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CalcPro - Algorithme A* 3D</title>
+    <title>CalcPro - A* 3D</title>
     <style>
-        body { margin: 0; background: #000; overflow: hidden; font-family: 'Segoe UI', sans-serif; }
-        
-        /* Interface superposée */
-        #interface {
-            position: absolute; top: 20px; left: 20px;
-            color: #00ffcc; background: rgba(0, 0, 0, 0.8);
-            padding: 15px; border: 1px solid #00ffcc;
-            border-radius: 8px; z-index: 10; pointer-events: none;
-        }
-        
-        .back-btn {
-            position: absolute; bottom: 20px; left: 20px;
-            background: #00ffcc; color: #000; padding: 10px 20px;
-            text-decoration: none; font-weight: bold; border-radius: 5px;
-            z-index: 10; transition: 0.3s;
-        }
-        .back-btn:hover { background: #fff; transform: scale(1.1); }
+        body { margin: 0; background: #000; overflow: hidden; font-family: sans-serif; }
+        #info { position: absolute; top: 15px; left: 15px; color: #00ffcc; background: rgba(0,0,0,0.7); padding: 10px; border: 1px solid #00ffcc; z-index: 5; pointer-events: none; }
+        .back { position: absolute; bottom: 20px; left: 20px; background: #00ffcc; color: black; padding: 10px; text-decoration: none; border-radius: 5px; z-index: 5; }
     </style>
 </head>
 <body>
-
-    <div id="interface">
-        <h2 style="margin:0 0 10px 0;">Algorithme A* Pro</h2>
-        <div>Statut : <span id="status" style="color:white">Calcul en cours...</span></div>
-        <div style="font-size: 12px; margin-top: 10px; color: #aaa;">Clic gauche: Tourner | Molette: Zoom</div>
-    </div>
-
-    <a href="index.html" class="back-btn">⬅ Retour au menu</a>
+    <div id="info">Algorithme A* 3D - Navigation Autonome</div>
+    <a href="index.html" class="back">⬅ Retour</a>
 
     <script type="module">
-        import * as THREE from 'https://unpkg.com/three@0.160.0/build/three.module.js';
-        import { OrbitControls } from 'https://unpkg.com/three@0.160.0/examples/jsm/controls/OrbitControls.js';
-        import { EffectComposer } from 'https://unpkg.com/three@0.160.0/examples/jsm/postprocessing/EffectComposer.js';
-        import { RenderPass } from 'https://unpkg.com/three@0.160.0/examples/jsm/postprocessing/RenderPass.js';
-        import { UnrealBloomPass } from 'https://unpkg.com/three@0.160.0/examples/jsm/postprocessing/UnrealBloomPass.js';
+        import * as THREE from 'https://cdn.skypack.dev/three@0.136.0/build/three.module.js';
+        import { OrbitControls } from 'https://cdn.skypack.dev/three@0.136.0/examples/jsm/controls/OrbitControls.js';
 
-        // --- SCÈNE ---
         const size = 12;
         const scene = new THREE.Scene();
         const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
         const renderer = new THREE.WebGLRenderer({ antialias: true });
         renderer.setSize(window.innerWidth, window.innerHeight);
-        renderer.toneMapping = THREE.ReinhardToneMapping;
         document.body.appendChild(renderer.domElement);
 
         const controls = new OrbitControls(camera, renderer.domElement);
-        camera.position.set(18, 18, 18);
+        camera.position.set(15, 15, 15);
 
-        // --- BLOOM (EFFET NÉON) ---
-        const composer = new EffectComposer(renderer);
-        composer.addPass(new RenderPass(scene, camera));
-        const bloom = new UnrealBloomPass(new THREE.Vector2(window.innerWidth, window.innerHeight), 1.5, 0.4, 0.85);
-        composer.addPass(bloom);
-
-        // --- GRILLE ---
+        // --- GRILLE ET ALGO ---
         const nodes = [];
-        const wallMat = new THREE.MeshStandardMaterial({ color: 0x1a1a1a, metalness: 0.8 });
-        const wallMesh = new THREE.InstancedMesh(new THREE.BoxGeometry(0.8, 0.8, 0.8), wallMat, size**3);
-        scene.add(wallMesh);
+        const geometry = new THREE.BoxGeometry(0.7, 0.7, 0.7);
         
-        let wallCount = 0;
-        const dummy = new THREE.Object3D();
-
         for(let x=0; x<size; x++) {
             nodes[x] = [];
             for(let y=0; y<size; y++) {
                 nodes[x][y] = [];
                 for(let z=0; z<size; z++) {
-                    const isWall = Math.random() < 0.25 && (x+y+z > 2) && (x+y+z < (size-1)*3-2);
-                    nodes[x][y][z] = { x, y, z, isWall, g: Infinity, f: Infinity, parent: null };
-                    if(isWall) {
-                        dummy.position.set(x, y, z); dummy.updateMatrix();
-                        wallMesh.setMatrixAt(wallCount++, dummy.matrix);
-                    }
+                    const isWall = Math.random() < 0.2 && (x+y+z > 2);
+                    const mat = new THREE.MeshBasicMaterial({ color: isWall ? 0x333333 : 0x00ffcc, transparent: true, opacity: isWall ? 0.8 : 0.05 });
+                    const cube = new THREE.Mesh(geometry, mat);
+                    cube.position.set(x, y, z);
+                    scene.add(cube);
+                    nodes[x][y][z] = { x, y, z, isWall, g: Infinity, f: Infinity, parent: null, mesh: cube };
                 }
             }
         }
 
-        // --- ALGO A* ---
-        function aStar() {
+        function solve() {
             let start = nodes[0][0][0], end = nodes[size-1][size-1][size-1];
             let open = [start]; start.g = 0;
             while(open.length > 0) {
                 open.sort((a,b) => a.f - b.f);
                 let curr = open.shift();
                 if(curr === end) {
-                    let path = [];
-                    while(curr) { path.push(new THREE.Vector3(curr.x, curr.y, curr.z)); curr = curr.parent; }
-                    return path.reverse();
+                    while(curr) { curr.mesh.material.opacity = 1; curr.mesh.material.color.set(0xffffff); curr = curr.parent; }
+                    return;
                 }
                 [[1,0,0],[-1,0,0],[0,1,0],[0,-1,0],[0,0,1],[0,0,-1]].forEach(d => {
                     let nx=curr.x+d[0], ny=curr.y+d[1], nz=curr.z+d[2];
@@ -107,35 +68,15 @@
                     }
                 });
             }
-            return null;
         }
-
-        const result = aStar();
-        if(result) {
-            document.getElementById('status').innerText = "Chemin trouvé !";
-            const curve = new THREE.CatmullRomCurve3(result);
-            const tube = new THREE.Mesh(new THREE.TubeGeometry(curve, 64, 0.07, 8, false), new THREE.MeshBasicMaterial({ color: 0x00ffcc }));
-            scene.add(tube);
-        } else {
-            document.getElementById('status').innerText = "Bloqué !";
-            document.getElementById('status').style.color = "red";
-        }
-
-        scene.add(new THREE.AmbientLight(0xffffff, 0.3));
+        solve();
 
         function animate() {
             requestAnimationFrame(animate);
-            scene.rotation.y += 0.001;
-            controls.update();
-            composer.render();
+            scene.rotation.y += 0.002;
+            renderer.render(scene, camera);
         }
         animate();
-
-        window.addEventListener('resize', () => {
-            camera.aspect = window.innerWidth / window.innerHeight;
-            camera.updateProjectionMatrix();
-            renderer.setSize(window.innerWidth, window.innerHeight);
-        });
     </script>
 </body>
 </html>
