@@ -2,20 +2,25 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <title>CalcPro - A* 3D</title>
+    <title>CalcPro - A* Ultra Pro</title>
     <style>
-        body { margin: 0; background: #000; overflow: hidden; font-family: sans-serif; }
-        #ui { position: absolute; top: 15px; left: 15px; color: #00ffcc; background: rgba(0,0,0,0.7); padding: 10px; border: 1px solid #00ffcc; z-index: 5; }
-        .back { position: absolute; bottom: 20px; left: 20px; background: #00ffcc; color: black; padding: 10px; text-decoration: none; border-radius: 5px; z-index: 5; font-weight: bold; }
+        body { margin: 0; background: #000; overflow: hidden; font-family: 'Courier New', monospace; }
+        #hud { position: absolute; top: 20px; left: 20px; color: #00ffcc; background: rgba(0,25,25,0.8); 
+               padding: 15px; border: 1px solid #00ffcc; z-index: 100; border-radius: 4px; pointer-events: none; }
+        .back { position: absolute; bottom: 20px; left: 20px; background: #00ffcc; color: #000; 
+                padding: 12px 20px; text-decoration: none; font-weight: bold; border-radius: 4px; z-index: 100; }
     </style>
 </head>
 <body>
-    <div id="ui">SYSTEME A* 3D - ACTIF</div>
-    <a href="index.html" class="back">⬅ RETOUR</a>
+    <div id="hud">
+        <div style="font-weight: bold; font-size: 1.2em;">NAV_CORE_V4</div>
+        <div id="status">INITIALISATION...</div>
+    </div>
+    <a href="index.html" class="back">⬅ MENU PRINCIPAL</a>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
     
-    <script src="script.js"></script>
+    <script src="script.js?v=1.0"></script>
 </body>
 </html>
