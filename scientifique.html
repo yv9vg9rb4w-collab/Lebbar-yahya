@@ -2,163 +2,164 @@
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
-<title>Lebbar Scientific</title>
+<title>CalcPro – Calculatrice Scientifique</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<!-- Math.js -->
+<script src="https://cdn.jsdelivr.net/npm/mathjs@11.11.0/lib/browser/math.js"></script>
 
 <style>
 body{
-    margin:0;
-    height:100vh;
-    display:flex;
-    justify-content:center;
-    align-items:center;
-    background:linear-gradient(135deg,#0f2027,#203a43,#2c5364);
-    font-family:Arial, sans-serif;
+  margin:0;
+  background:#0d0f1f;
+  font-family:Arial, Helvetica, sans-serif;
+  color:white;
 }
-.calc{
-    width:360px;
-    background:#0b0b0b;
-    border-radius:22px;
-    padding:15px;
-    box-shadow:0 30px 60px rgba(0,0,0,.7);
+
+header{
+  text-align:center;
+  padding:20px;
+  font-size:24px;
+  color:#00ffcc;
 }
-.brand{
-    text-align:center;
-    color:#00ffd5;
-    font-weight:bold;
-    margin-bottom:8px;
+
+.container{
+  max-width:420px;
+  margin:auto;
+  background:#151933;
+  padding:20px;
+  border-radius:15px;
+  box-shadow:0 0 25px rgba(0,0,0,.6);
 }
-.screen{
-    height:70px;
-    background:#000;
-    color:#00ff88;
-    font-size:26px;
-    text-align:right;
-    padding:15px;
-    border-radius:14px;
-    overflow-x:auto;
+
+#screen{
+  width:100%;
+  padding:15px;
+  font-size:22px;
+  border:none;
+  border-radius:10px;
+  margin-bottom:15px;
+  text-align:right;
 }
-.keys{
-    margin-top:12px;
-    display:grid;
-    grid-template-columns:repeat(4,1fr);
-    gap:10px;
+
+.buttons{
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:10px;
 }
+
 button{
-    height:55px;
-    border:none;
-    border-radius:14px;
-    font-size:17px;
-    background:#1e1e1e;
-    color:white;
+  padding:14px;
+  font-size:16px;
+  border:none;
+  border-radius:10px;
+  background:#00ffcc;
+  font-weight:bold;
+  cursor:pointer;
 }
-button:active{transform:scale(0.94);}
-.op{background:#ff9800;}
-.eq{background:#00c853;}
-.fn{background:#3949ab;}
-.ac{background:#e53935;}
+
+button.func{
+  background:#ff9f43;
+}
+
+button:hover{
+  opacity:0.9;
+}
+
+footer{
+  text-align:center;
+  margin-top:15px;
+  font-size:13px;
+  color:#aaa;
+}
 </style>
 </head>
 
 <body>
 
-<div class="calc">
-<div class="brand">LEBBAR • SCIENTIFIC</div>
-<div class="screen" id="screen">0</div>
+<header>🧪 Calculatrice Scientifique</header>
 
-<div class="keys">
-<button class="ac" onclick="clearAll()">AC</button>
-<button class="op" onclick="del()">⌫</button>
-<button class="op" onclick="add('(')">(</button>
-<button class="op" onclick="add(')')">)</button>
+<div class="container">
 
-<button onclick="add('7')">7</button>
-<button onclick="add('8')">8</button>
-<button onclick="add('9')">9</button>
-<button class="op" onclick="add('/')">÷</button>
+  <input id="screen" readonly placeholder="0">
 
-<button onclick="add('4')">4</button>
-<button onclick="add('5')">5</button>
-<button onclick="add('6')">6</button>
-<button class="op" onclick="add('*')">×</button>
+  <div class="buttons">
+    <button onclick="clearAll()">C</button>
+    <button onclick="append('(')">(</button>
+    <button onclick="append(')')">)</button>
+    <button onclick="append('/')">÷</button>
 
-<button onclick="add('1')">1</button>
-<button onclick="add('2')">2</button>
-<button onclick="add('3')">3</button>
-<button class="op" onclick="add('-')">−</button>
+    <button onclick="append('7')">7</button>
+    <button onclick="append('8')">8</button>
+    <button onclick="append('9')">9</button>
+    <button onclick="append('*')">×</button>
 
-<button onclick="add('0')">0</button>
-<button onclick="add('.')">.</button>
-<button class="eq" onclick="calc()">=</button>
-<button class="op" onclick="add('+')">+</button>
+    <button onclick="append('4')">4</button>
+    <button onclick="append('5')">5</button>
+    <button onclick="append('6')">6</button>
+    <button onclick="append('-')">−</button>
 
-<button class="fn" onclick="add('√')">√</button>
-<button class="fn" onclick="add('^')">xʸ</button>
-<button class="fn" onclick="add('sin(')">sin</button>
-<button class="fn" onclick="add('cos(')">cos</button>
+    <button onclick="append('1')">1</button>
+    <button onclick="append('2')">2</button>
+    <button onclick="append('3')">3</button>
+    <button onclick="append('+')">+</button>
 
-<button class="fn" onclick="add('tan(')">tan</button>
-<button class="fn" onclick="add('log(')">log</button>
-<button class="fn" onclick="add('ln(')">ln</button>
-<button class="fn" onclick="add('π')">π</button>
+    <button onclick="append('0')">0</button>
+    <button onclick="append('.')">.</button>
+    <button onclick="calculate()" class="func">=</button>
+    <button onclick="sqrt()" class="func">√</button>
 
+    <button onclick="append('^2')" class="func">x²</button>
+    <button onclick="append('^3')" class="func">x³</button>
+    <button onclick="append('pi')" class="func">π</button>
+    <button onclick="append('e')" class="func">e</button>
 
+    <button onclick="append('sin(')" class="func">sin</button>
+    <button onclick="append('cos(')" class="func">cos</button>
+    <button onclick="append('tan(')" class="func">tan</button>
+    <button onclick="append('log(')" class="func">log</button>
+
+    <button onclick="append('ln(')" class="func">ln</button>
+    <button onclick="toggleAngle()" class="func">DEG</button>
+  </div>
 
 </div>
-</div>
+
+<footer>CalcPro © Lebbar Yahya</footer>
 
 <script>
 let screen = document.getElementById("screen");
-let expr = "";
+let deg = true;
 
-function add(v){
-    if(screen.innerText==="0") expr="";
-    expr += v;
-    screen.innerText = expr;
+function append(val){
+  screen.value += val;
 }
 
 function clearAll(){
-    expr="";
-    screen.innerText="0";
+  screen.value = "";
 }
 
-function del(){
-    expr = expr.slice(0,-1);
-    screen.innerText = expr || "0";
+function sqrt(){
+  screen.value += "sqrt(";
 }
 
-function calc(){
-    try{
-        let e = expr;
+function toggleAngle(){
+  deg = !deg;
+  math.config({angles: deg ? 'deg' : 'rad'});
+  event.target.innerText = deg ? "DEG" : "RAD";
+}
 
-        // multiplications automatiques
-        e = e.replace(/(\d)(π)/g,"$1*Math.PI");
-        e = e.replace(/(\d)\(/g,"$1*(");
-        e = e.replace(/\)(\d)/g,")*$1");
-
-        // racine sans parenthèses √9 → sqrt(9)
-        e = e.replace(/√(\d+(\.\d+)?)/g,"Math.sqrt($1)");
-        e = e.replace(/√/g,"Math.sqrt");
-
-        // symboles
-        e = e.replace(/π/g,"Math.PI");
-        e = e.replace(/\^/g,"**");
-        e = e.replace(/sin/g,"Math.sin");
-        e = e.replace(/cos/g,"Math.cos");
-        e = e.replace(/tan/g,"Math.tan");
-        e = e.replace(/log/g,"Math.log10");
-        e = e.replace(/ln/g,"Math.log");
-
-        let result = Function("return "+e)();
-        screen.innerText = result;
-        expr = result.toString();
-    }catch{
-        screen.innerText="Erreur";
-        expr="";
-    }
+function calculate(){
+  try{
+    let expr = screen.value
+      .replace(/×/g,"*")
+      .replace(/÷/g,"/");
+    screen.value = math.evaluate(expr);
+  }catch{
+    screen.value = "Erreur";
+  }
 }
 </script>
 
-               <footer>CalcPro © Lebbar Yahya</footer>
 </body>
 </html>
