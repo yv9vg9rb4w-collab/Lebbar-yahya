@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
-<title>Calcul Symbolique</title>
+<title>Calcul Symbolique Supérieur</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/11.9.1/math.min.js"></script>
 <style>
@@ -17,21 +17,22 @@
   h1 {
     text-align: center;
     color: #00ffcc;
+    margin-bottom: 15px;
   }
 
-  input {
+  #expr {
     width: 100%;
     padding: 15px;
     font-size: 18px;
     border-radius: 10px;
     border: none;
-    margin-bottom: 15px;
     background: #1e1e1e;
     color: #00ffcc;
+    margin-bottom: 15px;
     text-align: center;
   }
 
-  .buttons {
+  .buttons, .quick-buttons {
     display: flex;
     flex-wrap: wrap;
     gap: 10px;
@@ -64,13 +65,47 @@
     color: #00ffcc;
     word-wrap: break-word;
   }
+
+  #history {
+    margin-top: 20px;
+    max-height: 200px;
+    overflow-y: auto;
+    background: #1a1a2a;
+    padding: 10px;
+    border-radius: 10px;
+  }
+
+  .history-item {
+    margin-bottom: 8px;
+    color: #00ffccaa;
+    font-size: 14px;
+  }
+
+  footer {
+    margin-top: 30px;
+    text-align: center;
+    font-size: 14px;
+    color: #aaa;
+  }
 </style>
 </head>
 <body>
 
-<h1>Calcul Symbolique</h1>
-<input type="text" id="expr" placeholder="Entrez une expression, ex: x^3+3*x^2+2*x">
+<h1>Calcul Symbolique Supérieur</h1>
+<input type="text" id="expr" placeholder="Entrez une expression, ex: x^3 + 3*x^2 + 2*x">
 
+<!-- Boutons fonctions rapides -->
+<div class="quick-buttons">
+  <button onclick="ajouter('^2')">x²</button>
+  <button onclick="ajouter('^3')">x³</button>
+  <button onclick="ajouter('sqrt()')">√</button>
+  <button onclick="ajouter('+')">+</button>
+  <button onclick="ajouter('-')">-</button>
+  <button onclick="ajouter('*')">*</button>
+  <button onclick="ajouter('/')">/</button>
+</div>
+
+<!-- Boutons calcul symbolique -->
 <div class="buttons">
   <button onclick="simplifier()">Simplifier</button>
   <button onclick="derivee()">Dériver</button>
@@ -82,14 +117,39 @@
 
 <div id="result">Résultat ici...</div>
 
-<script>
-const resultDiv = document.getElementById('result');
-const exprInput = document.getElementById('expr');
+<h3>Historique :</h3>
+<div id="history"></div>
 
+<footer>
+  Développeur: <strong>Lebbar Yahya</strong>
+</footer>
+
+<script>
+const exprInput = document.getElementById('expr');
+const resultDiv = document.getElementById('result');
+const historyDiv = document.getElementById('history');
+
+function ajouter(val) {
+  const cursorPos = exprInput.selectionStart;
+  const text = exprInput.value;
+  exprInput.value = text.slice(0, cursorPos) + val + text.slice(cursorPos);
+  exprInput.focus();
+  exprInput.selectionEnd = cursorPos + val.length;
+}
+
+function ajouterHistorique(action, res) {
+  const div = document.createElement('div');
+  div.className = 'history-item';
+  div.textContent = `${action} → ${res}`;
+  historyDiv.prepend(div);
+}
+
+// Fonctions symboliques
 function simplifier() {
   try {
-    const simplified = math.simplify(exprInput.value).toString();
-    resultDiv.innerHTML = "Simplifié : " + simplified;
+    const res = math.simplify(exprInput.value).toString();
+    resultDiv.innerHTML = "Simplifié : " + res;
+    ajouterHistorique('Simplifier', res);
   } catch(e) {
     resultDiv.innerHTML = "Erreur : " + e.message;
   }
@@ -97,8 +157,9 @@ function simplifier() {
 
 function derivee() {
   try {
-    const d = math.derivative(exprInput.value, 'x').toString();
-    resultDiv.innerHTML = "Dérivée : " + d;
+    const res = math.derivative(exprInput.value, 'x').toString();
+    resultDiv.innerHTML = "Dérivée : " + res;
+    ajouterHistorique('Dériver', res);
   } catch(e) {
     resultDiv.innerHTML = "Erreur : " + e.message;
   }
@@ -106,8 +167,9 @@ function derivee() {
 
 function integrale() {
   try {
-    const integral = math.integral(exprInput.value, 'x').toString();
-    resultDiv.innerHTML = "Intégrale : " + integral + " + C";
+    const res = math.integral(exprInput.value, 'x').toString();
+    resultDiv.innerHTML = "Intégrale : " + res + " + C";
+    ajouterHistorique('Intégrer', res + " + C");
   } catch(e) {
     resultDiv.innerHTML = "Erreur : " + e.message;
   }
@@ -115,8 +177,9 @@ function integrale() {
 
 function factoriser() {
   try {
-    const f = math.factor(exprInput.value).toString();
-    resultDiv.innerHTML = "Factorisé : " + f;
+    const res = math.factor(exprInput.value).toString();
+    resultDiv.innerHTML = "Factorisé : " + res;
+    ajouterHistorique('Factoriser', res);
   } catch(e) {
     resultDiv.innerHTML = "Erreur : " + e.message;
   }
@@ -124,8 +187,9 @@ function factoriser() {
 
 function developper() {
   try {
-    const exp = math.expand(exprInput.value).toString();
-    resultDiv.innerHTML = "Développé : " + exp;
+    const res = math.expand(exprInput.value).toString();
+    resultDiv.innerHTML = "Développé : " + res;
+    ajouterHistorique('Développer', res);
   } catch(e) {
     resultDiv.innerHTML = "Erreur : " + e.message;
   }
@@ -136,6 +200,7 @@ function resoudre() {
     const eq = math.parse(exprInput.value + "=0");
     const solutions = math.solve(eq, 'x');
     resultDiv.innerHTML = "Solutions : " + solutions.join(', ');
+    ajouterHistorique('Résoudre', solutions.join(', '));
   } catch(e) {
     resultDiv.innerHTML = "Erreur : " + e.message;
   }
