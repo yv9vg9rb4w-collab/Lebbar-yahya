@@ -2,203 +2,81 @@
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
-<title>CalcPro – Calcul Matrices</title>
+<title>CalcPro – Matrices ULTRA</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<!-- Math.js -->
 <script src="https://cdn.jsdelivr.net/npm/mathjs@11.11.0/lib/browser/math.js"></script>
 
 <style>
-body{
-  margin:0;
-  background:#121212;
-  font-family:Arial, Helvetica, sans-serif;
-  color:white;
-}
-
-header{
-  text-align:center;
-  padding:20px;
-  font-size:24px;
-  color:#60a5fa;
-  font-weight:bold;
-}
-
-.container{
-  max-width:700px;
-  margin:auto;
-  background:#1e1e2f;
-  padding:20px;
-  border-radius:15px;
-  box-shadow:0 0 25px rgba(0,0,0,.6);
-}
-
-.matrix-box{
-  display:grid;
-  grid-template-columns:1fr 1fr;
-  gap:15px;
-}
-
-textarea{
-  width:100%;
-  height:120px;
-  background:#0b0e1a;
-  color:#60a5fa;
-  border:none;
-  border-radius:10px;
-  padding:10px;
-  font-size:15px;
-  resize:none;
-}
-
-.buttons{
-  display:grid;
-  grid-template-columns:repeat(3,1fr);
-  gap:10px;
-  margin-top:15px;
-}
-
-button{
-  padding:12px;
-  font-size:15px;
-  border:none;
-  border-radius:10px;
-  cursor:pointer;
-  background:#2563eb;
-  color:white;
-  font-weight:bold;
-}
-
-button:hover{
-  opacity:0.9;
-}
-
-.result{
-  margin-top:15px;
-  background:#0b0e1a;
-  padding:15px;
-  border-radius:10px;
-  min-height:70px;
-  white-space:pre-wrap;
-  color:#60a5fa;
-  font-size:16px;
-}
-
-footer{
-  text-align:center;
-  margin-top:20px;
-  color:#aaa;
-  font-size:13px;
-}
+body{margin:0;background:#121212;color:white;font-family:Arial,sans-serif;}
+header{text-align:center;padding:20px;font-size:24px;color:#60a5fa;font-weight:bold;}
+.container{max-width:700px;margin:auto;background:#1e1e2f;padding:20px;border-radius:15px;box-shadow:0 0 25px rgba(0,0,0,.6);}
+.matrix-box{display:grid;grid-template-columns:1fr 1fr;gap:15px;}
+textarea{width:100%;height:120px;background:#0b0e1a;color:#60a5fa;border:none;border-radius:10px;padding:10px;font-size:15px;resize:none;}
+.buttons{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:15px;}
+button{padding:12px;font-size:15px;border:none;border-radius:10px;cursor:pointer;background:#2563eb;color:white;font-weight:bold;}
+button:hover{opacity:0.9;}
+.result{margin-top:15px;background:#0b0e1a;padding:15px;border-radius:10px;min-height:70px;white-space:pre-wrap;color:#60a5fa;font-size:16px;}
+footer{text-align:center;margin-top:20px;color:#aaa;font-size:13px;}
+table{border-collapse:collapse;}
+td{border:1px solid #60a5fa;padding:6px;text-align:center;}
 </style>
 </head>
 
 <body>
-
-<header>🧮 Calcul Matrices</header>
-
+<header>🧮 Matrices ULTRA</header>
 <div class="container">
-
   <div class="matrix-box">
-    <textarea id="A" placeholder="Matrice A
-Ex:
-1 2
-3 4"></textarea>
-
-    <textarea id="B" placeholder="Matrice B
-Ex:
-5 6
-7 8"></textarea>
+    <textarea id="A" placeholder="Matrice A&#10;Ex: 1 2 3&#10;4 5 6"></textarea>
+    <textarea id="B" placeholder="Matrice B&#10;Ex: 7,8,9&#10;10,11,12"></textarea>
   </div>
 
   <div class="buttons">
     <button onclick="add()">A + B</button>
     <button onclick="sub()">A − B</button>
     <button onclick="mul()">A × B</button>
-
     <button onclick="det()">det(A)</button>
     <button onclick="inv()">A⁻¹</button>
     <button onclick="trans()">Aᵀ</button>
   </div>
 
   <div class="result" id="result">Résultat…</div>
-
 </div>
-
 <footer>CalcPro © Lebbar Yahya</footer>
 
 <script>
+// parse matrix automatiquement (espaces, virgules, tab)
 function parseMatrix(text){
-  // transforme chaque ligne en array de nombres
-  return math.matrix(
-    text.trim().split("\n").map(row =>
-      row.trim().split(/\s+/).map(Number)
-    )
-  );
+  const rows = text.trim().split(/\n/);
+  const matrix = rows.map(row => row.trim().split(/[\s,]+/).map(Number));
+  return math.matrix(matrix);
 }
 
-function show(mat){
-  document.getElementById("result").innerText =
-    math.format(mat, {precision: 6});
+// affiche le résultat en tableau HTML
+function showMatrix(mat){
+  if(typeof mat==="number") return mat;
+  const arr = mat._data || mat;
+  let html="<table>";
+  arr.forEach(r=>{
+    html+="<tr>";
+    r.forEach(c=>html+="<td>"+c+"</td>");
+    html+="</tr>";
+  });
+  html+="</table>";
+  return html;
 }
 
-function add(){
-  try{
-    const A = parseMatrix(document.getElementById("A").value);
-    const B = parseMatrix(document.getElementById("B").value);
-    show(math.add(A,B));
-  }catch{
-    document.getElementById("result").innerText = "❌ Impossible d’additionner";
-  }
+function display(result){
+  document.getElementById("result").innerHTML=showMatrix(result);
 }
 
-function sub(){
-  try{
-    const A = parseMatrix(document.getElementById("A").value);
-    const B = parseMatrix(document.getElementById("B").value);
-    show(math.subtract(A,B));
-  }catch{
-    document.getElementById("result").innerText = "❌ Impossible de soustraire";
-  }
-}
-
-function mul(){
-  try{
-    const A = parseMatrix(document.getElementById("A").value);
-    const B = parseMatrix(document.getElementById("B").value);
-    show(math.multiply(A,B));
-  }catch{
-    document.getElementById("result").innerText = "❌ Dimensions incompatibles";
-  }
-}
-
-function det(){
-  try{
-    const A = parseMatrix(document.getElementById("A").value);
-    show(math.det(A));
-  }catch{
-    document.getElementById("result").innerText = "❌ Matrice non carrée ou erreur";
-  }
-}
-
-function inv(){
-  try{
-    const A = parseMatrix(document.getElementById("A").value);
-    show(math.inv(A));
-  }catch{
-    document.getElementById("result").innerText = "❌ Matrice non inversible";
-  }
-}
-
-function trans(){
-  try{
-    const A = parseMatrix(document.getElementById("A").value);
-    show(math.transpose(A));
-  }catch{
-    document.getElementById("result").innerText = "❌ Erreur";
-  }
-}
+// opérations
+function add(){try{display(math.add(parseMatrix(A.value),parseMatrix(B.value)));}catch{result.innerText="❌ Impossible d’additionner";}}
+function sub(){try{display(math.subtract(parseMatrix(A.value),parseMatrix(B.value)));}catch{result.innerText="❌ Impossible de soustraire";}}
+function mul(){try{display(math.multiply(parseMatrix(A.value),parseMatrix(B.value)));}catch{result.innerText="❌ Dimensions incompatibles";}}
+function det(){try{display(math.det(parseMatrix(A.value)));}catch{result.innerText="❌ Matrice non carrée ou erreur";}}
+function inv(){try{display(math.inv(parseMatrix(A.value)));}catch{result.innerText="❌ Matrice non inversible";}}
+function trans(){try{display(math.transpose(parseMatrix(A.value)));}}
 </script>
-
 </body>
 </html>
