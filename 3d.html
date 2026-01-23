@@ -3,91 +3,116 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CalcPro - A* 3D Pro Mobile</title>
+    <title>CalcPro - Matrix Scanner</title>
     <style>
-        body { margin: 0; background: #000; color: #00ffcc; font-family: monospace; overflow: hidden; }
+        body { margin: 0; background: #000; color: #00ffcc; font-family: 'Courier New', monospace; overflow: hidden; }
         canvas { display: block; }
-        #hud { position: absolute; top: 15px; left: 15px; background: rgba(0,20,20,0.8); 
-               padding: 10px; border: 1px solid #00ffcc; pointer-events: none; }
-        .btn { position: absolute; bottom: 20px; left: 20px; background: #00ffcc; color: #000; 
-                padding: 12px 20px; text-decoration: none; font-weight: bold; border-radius: 5px; }
+        #hud { position: absolute; top: 20px; left: 20px; background: rgba(0,20,20,0.85); 
+               padding: 15px; border: 1px solid #00ffcc; border-radius: 4px; pointer-events: none;
+               box-shadow: 0 0 15px rgba(0, 255, 204, 0.3); }
+        .back { position: absolute; bottom: 30px; left: 30px; background: #00ffcc; color: #000; 
+                padding: 15px 25px; text-decoration: none; font-weight: bold; border-radius: 5px; 
+                text-transform: uppercase; letter-spacing: 1px; }
+        .glitch { animation: flash 2s infinite; }
+        @keyframes flash { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
     </style>
 </head>
 <body>
     <div id="hud">
-        <strong>ALGO A* ENGINE</strong><br>
-        STATUS: <span id="st">ACTIVE</span>
+        <div style="font-size: 1.2em; border-bottom: 1px solid #00ffcc; margin-bottom: 8px;">CORE_PROCESSOR_v8</div>
+        <div>STATUS: <span class="glitch" style="color: #fff;">SCANNING_PATH...</span></div>
+        <div id="coords" style="font-size: 0.8em; margin-top: 5px; color: #888;">X:0 Y:0 Z:0</div>
     </div>
-    <a href="index.html" class="btn">⬅ RETOUR</a>
+    <a href="index.html" class="back">⬅ Retour CalcPro</a>
 
-    <canvas id="c"></canvas>
+    <canvas id="matrixCanvas"></canvas>
 
     <script>
-        const canvas = document.getElementById('c');
+        const canvas = document.getElementById('matrixCanvas');
         const ctx = canvas.getContext('2d');
-        let w, h;
+        const coordDisplay = document.getElementById('coords');
+        let w, h, points = [];
+        const count = 150; // Nombre de particules de données
 
-        // Configuration du cube 3D sans WebGL
-        let nodes = [];
-        const size = 6; // Plus petit pour le style
-        let angle = 0;
-
-        function resize() {
+        function init() {
             w = canvas.width = window.innerWidth;
             h = canvas.height = window.innerHeight;
-        }
-
-        window.addEventListener('resize', resize);
-        resize();
-
-        // Création des points 3D
-        for(let x=0; x<size; x++) {
-            for(let y=0; y<size; y++) {
-                for(let z=0; z<size; z++) {
-                    if(Math.random() > 0.7) nodes.push({x: x-size/2, y: y-size/2, z: z-size/2});
-                }
+            points = [];
+            for(let i=0; i<count; i++) {
+                points.push({
+                    x: (Math.random() - 0.5) * 400,
+                    y: (Math.random() - 0.5) * 400,
+                    z: (Math.random() - 0.5) * 400,
+                    baseColor: Math.random() > 0.1 ? '#00ffcc' : '#ffffff'
+                });
             }
         }
 
+        let angleY = 0;
+        let angleX = 0.5;
+
         function project(x, y, z) {
-            // Projection mathématique 3D vers 2D
-            const scale = 300 / (z + 10);
-            const x2d = x * scale + w / 2;
-            const y2d = y * scale + h / 2;
-            return {x: x2d, y: y2d, s: scale};
+            // Perspective mathématique
+            const focalLength = 400;
+            const scale = focalLength / (focalLength + z);
+            return {
+                x: x * scale + w / 2,
+                y: y * scale + h / 2,
+                scale: scale
+            };
         }
 
         function draw() {
-            ctx.fillStyle = 'black';
+            // Effet de traînée (Ghosting)
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.2)';
             ctx.fillRect(0, 0, w, h);
-            
-            angle += 0.01;
-            const cos = Math.cos(angle);
-            const sin = Math.sin(angle);
 
-            nodes.forEach(p => {
-                // Rotation
-                let x = p.x * cos - p.z * sin;
-                let z = p.x * sin + p.z * cos;
-                let y = p.y;
+            angleY += 0.005;
+            const cosY = Math.cos(angleY);
+            const sinY = Math.sin(angleY);
 
-                let proj = project(x, y, z);
+            points.forEach((p, i) => {
+                // Rotation 3D
+                let x1 = p.x * cosY - p.z * sinY;
+                let z1 = p.x * sinY + p.z * cosY;
                 
-                // Dessin du point style "Matrix/Pro"
-                ctx.fillStyle = '#00ffcc';
-                let size = proj.s * 0.5;
-                ctx.beginPath();
-                ctx.arc(proj.x, proj.y, size > 0 ? size : 0.1, 0, Math.PI * 2);
-                ctx.fill();
+                let proj = project(x1, p.y, z1);
 
-                // Effet de scanline pro
-                ctx.strokeStyle = 'rgba(0, 255, 204, 0.1)';
-                ctx.lineTo(proj.x, proj.y);
+                if(proj.scale > 0) {
+                    const size = Math.max(0.5, proj.scale * 2);
+                    const opacity = Math.min(1, proj.scale);
+
+                    ctx.fillStyle = p.baseColor;
+                    ctx.globalAlpha = opacity;
+                    
+                    // Dessin des "Data Nodes"
+                    ctx.beginPath();
+                    ctx.arc(proj.x, proj.y, size, 0, Math.PI * 2);
+                    ctx.fill();
+
+                    // Lignes de connexion entre certains points (Effet Neural Network)
+                    if(i % 10 === 0 && points[i+1]) {
+                        let nextProj = project(points[i+1].x * cosY - points[i+1].z * sinY, points[i+1].y, points[i+1].z * cosY + points[i+1].x * sinY);
+                        ctx.strokeStyle = 'rgba(0, 255, 204, 0.2)';
+                        ctx.lineWidth = 0.5;
+                        ctx.beginPath();
+                        ctx.moveTo(proj.x, proj.y);
+                        ctx.lineTo(nextProj.x, nextProj.y);
+                        ctx.stroke();
+                    }
+                }
             });
+
+            // Mise à jour du HUD
+            if(Math.random() > 0.9) {
+                coordDisplay.innerText = `X:${(Math.random()*100).toFixed(0)} Y:${(Math.random()*100).toFixed(0)} Z:${(Math.random()*100).toFixed(0)}`;
+            }
 
             requestAnimationFrame(draw);
         }
 
+        window.addEventListener('resize', init);
+        init();
         draw();
     </script>
 </body>
