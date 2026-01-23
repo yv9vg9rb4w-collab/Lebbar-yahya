@@ -1,87 +1,151 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CalcPro - Calcul Symbolique</title>
-    <style>
-        :root { --neon: #00ffcc; --bg: #000; }
-        body { background: var(--bg); color: white; font-family: 'Courier New', monospace; margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; }
-        
-        .panel { width: 100%; max-width: 450px; border: 1px solid var(--neon); padding: 20px; background: rgba(0, 20, 20, 0.8); box-shadow: 0 0 20px rgba(0, 255, 204, 0.2); border-radius: 8px; }
-        h2 { color: var(--neon); text-align: center; font-size: 1.2em; margin-bottom: 20px; border-bottom: 1px solid var(--neon); padding-bottom: 10px; }
-        
-        input { width: 100%; padding: 15px; background: #111; border: 1px solid #333; color: var(--neon); font-size: 1.1em; border-radius: 4px; box-sizing: border-box; outline: none; }
-        input:focus { border-color: white; box-shadow: 0 0 10px var(--neon); }
+<meta charset="UTF-8">
+<title>CalcPro – Calcul Symbolique</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-        .controls { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 15px; }
-        button { padding: 12px; background: transparent; border: 1px solid var(--neon); color: var(--neon); font-weight: bold; cursor: pointer; border-radius: 4px; transition: 0.3s; }
-        button:hover { background: var(--neon); color: black; }
+<!-- Math.js (calcul symbolique) -->
+<script src="https://cdn.jsdelivr.net/npm/mathjs@11.11.0/lib/browser/math.js"></script>
 
-        .output-label { margin-top: 25px; font-size: 0.8em; color: #666; text-transform: uppercase; }
-        #output { width: 100%; min-height: 60px; margin-top: 5px; padding: 15px; background: #050505; border: 1px solid #222; color: white; font-size: 1.3em; display: flex; align-items: center; justify-content: center; text-align: center; border-radius: 4px; }
+<style>
+body{
+  margin:0;
+  background:#0d0f1f;
+  font-family:Arial, Helvetica, sans-serif;
+  color:white;
+}
 
-        .examples { margin-top: 20px; font-size: 0.7em; color: #444; }
-        .back { margin-top: 30px; text-decoration: none; color: var(--neon); border-bottom: 1px solid var(--neon); font-size: 0.9em; }
-    </style>
+header{
+  text-align:center;
+  padding:20px;
+  font-size:24px;
+  color:#00ffcc;
+}
+
+.container{
+  max-width:500px;
+  margin:auto;
+  background:#151933;
+  padding:20px;
+  border-radius:15px;
+  box-shadow:0 0 25px rgba(0,0,0,.6);
+}
+
+input{
+  width:100%;
+  padding:14px;
+  font-size:18px;
+  border-radius:10px;
+  border:none;
+  outline:none;
+  margin-bottom:15px;
+}
+
+.buttons{
+  display:grid;
+  grid-template-columns:repeat(2,1fr);
+  gap:10px;
+}
+
+button{
+  padding:12px;
+  font-size:15px;
+  border:none;
+  border-radius:10px;
+  cursor:pointer;
+  background:#00ffcc;
+  font-weight:bold;
+}
+
+button:hover{
+  background:#00d4aa;
+}
+
+.result{
+  margin-top:15px;
+  background:#0b0e1a;
+  padding:15px;
+  border-radius:10px;
+  min-height:60px;
+  word-wrap:break-word;
+}
+
+footer{
+  text-align:center;
+  margin-top:20px;
+  color:#aaa;
+  font-size:13px;
+}
+</style>
 </head>
+
 <body>
 
-    <div class="panel">
-        <h2>SYMBOLIC_ENGINE v2.0</h2>
-        
-        <input type="text" id="inputExp" placeholder="Ex: simplify(2x + 5x)" spellcheck="false">
+<header>🧮 Calcul Symbolique</header>
 
-        <div class="controls">
-            <button onclick="runSym('simplify')">SIMPLIFIER</button>
-            <button onclick="runSym('d')">DÉRIVER (x)</button>
-            <button onclick="runSym('integral')">INTÉGRER (x)</button>
-            <button onclick="runSym('roots')">RACINES</button>
-        </div>
+<div class="container">
 
-        <div class="output-label">Terminal Output:</div>
-        <div id="output">_WAITING_INPUT</div>
+  <input id="expr" placeholder="Ex : x^2 + 2*x + 1">
 
-        <div class="examples">
-            💡 ASTUCES :<br>
-            - Dériver : d(x^3 + 2x)<br>
-            - Simplifier : simplify((x+1)^2)<br>
-            - Résoudre : roots(x^2 - 4)
-        </div>
-    </div>
+  <div class="buttons">
+    <button onclick="simplifier()">Simplifier</button>
+    <button onclick="deriver()">Dériver</button>
+    <button onclick="integrer()">Intégrer</button>
+    <button onclick="evaluer()">Évaluer x=2</button>
+  </div>
 
-    <a href="index.html" class="back">RETURN_TO_SYSTEM</a>
+  <div class="result" id="result">Résultat…</div>
 
-    <script src="https://cdn.jsdelivr.net/npm/algebrite@1.4.0/dist/algebrite.bundle-for-browser.min.js"></script>
+</div>
 
-    <script>
-        const input = document.getElementById('inputExp');
-        const output = document.getElementById('output');
+<footer>CalcPro © Lebbar Yahya</footer>
 
-        function runSym(cmd) {
-            let val = input.value.trim();
-            if (!val) return;
+<script>
+function simplifier(){
+  try{
+    const res = math.simplify(getExpr());
+    show(res.toString());
+  }catch{
+    show("❌ Erreur de syntaxe");
+  }
+}
 
-            try {
-                let result;
-                if (cmd === 'simplify') result = Algebrite.run(`simplify(${val})`);
-                else if (cmd === 'd') result = Algebrite.run(`d(${val}, x)`);
-                else if (cmd === 'integral') result = Algebrite.run(`integral(${val}, x)`);
-                else if (cmd === 'roots') result = Algebrite.run(`roots(${val})`);
-                else result = Algebrite.run(val);
+function deriver(){
+  try{
+    const res = math.derivative(getExpr(),"x");
+    show(res.toString());
+  }catch{
+    show("❌ Impossible de dériver");
+  }
+}
 
-                output.innerText = result.toString();
-                output.style.color = "#00ffcc";
-            } catch (err) {
-                output.innerText = "ERROR_IN_SYNTAX";
-                output.style.color = "#ff4444";
-            }
-        }
+function integrer(){
+  try{
+    const res = math.integral(getExpr(),"x");
+    show(res.toString()+" + C");
+  }catch{
+    show("❌ Intégration non supportée");
+  }
+}
 
-        // Permet de valider avec la touche Entrée
-        input.addEventListener("keypress", (e) => {
-            if (e.key === "Enter") runSym('simplify');
-        });
-    </script>
+function evaluer(){
+  try{
+    const res = math.evaluate(getExpr(),{x:2});
+    show(res);
+  }catch{
+    show("❌ Erreur d’évaluation");
+  }
+}
+
+function getExpr(){
+  return document.getElementById("expr").value;
+}
+
+function show(txt){
+  document.getElementById("result").innerText = txt;
+}
+</script>
+
 </body>
 </html>
