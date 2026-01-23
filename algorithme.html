@@ -1,97 +1,21 @@
-// Configuration
-const SIZE = 12;
-const nodes = [];
-const scene = new THREE.Scene();
-const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-const renderer = new THREE.WebGLRenderer({ antialias: true });
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>CalcPro - A* 3D</title>
+    <style>
+        body { margin: 0; background: #000; overflow: hidden; font-family: sans-serif; }
+        #ui { position: absolute; top: 15px; left: 15px; color: #00ffcc; background: rgba(0,0,0,0.7); padding: 10px; border: 1px solid #00ffcc; z-index: 5; }
+        .back { position: absolute; bottom: 20px; left: 20px; background: #00ffcc; color: black; padding: 10px; text-decoration: none; border-radius: 5px; z-index: 5; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <div id="ui">SYSTEME A* 3D - ACTIF</div>
+    <a href="index.html" class="back">⬅ RETOUR</a>
 
-renderer.setSize(window.innerWidth, window.innerHeight);
-document.body.appendChild(renderer.domElement);
-
-// Caméra Interactive
-const controls = new THREE.OrbitControls(camera, renderer.domElement);
-camera.position.set(16, 16, 16);
-
-// Création de la grille 3D
-const geometry = new THREE.BoxGeometry(0.6, 0.6, 0.6);
-
-for (let x = 0; x < SIZE; x++) {
-    nodes[x] = [];
-    for (let y = 0; y < SIZE; y++) {
-        nodes[x][y] = [];
-        for (let z = 0; z < SIZE; z++) {
-            const isWall = Math.random() < 0.25 && (x + y + z > 2);
-            const material = new THREE.MeshPhongMaterial({
-                color: isWall ? 0x222222 : 0x00ffcc,
-                transparent: true,
-                opacity: isWall ? 0.7 : 0.05
-            });
-            const cube = new THREE.Mesh(geometry, material);
-            cube.position.set(x, y, z);
-            scene.add(cube);
-            nodes[x][y][z] = { x, y, z, isWall, g: Infinity, f: Infinity, parent: null, mesh: cube };
-        }
-    }
-}
-
-// Lumière
-const light = new THREE.PointLight(0x00ffcc, 1, 100);
-light.position.set(SIZE, SIZE, SIZE);
-scene.add(light);
-scene.add(new THREE.AmbientLight(0x404040));
-
-// Algorithme A*
-function solve() {
-    let start = nodes[0][0][0];
-    let end = nodes[SIZE - 1][SIZE - 1][SIZE - 1];
-    let openSet = [start];
-    start.g = 0;
-
-    while (openSet.length > 0) {
-        openSet.sort((a, b) => a.f - b.f);
-        let current = openSet.shift();
-
-        if (current === end) {
-            document.getElementById('status').innerText = "CHEMIN TROUVÉ";
-            while (current) {
-                current.mesh.material.color.set(0xffffff);
-                current.mesh.material.opacity = 1;
-                current.mesh.scale.set(1.2, 1.2, 1.2);
-                current = current.parent;
-            }
-            return;
-        }
-
-        const neighbors = [];
-        [[1,0,0],[-1,0,0],[0,1,0],[0,-1,0],[0,0,1],[0,0,-1]].forEach(d => {
-            let nx = current.x + d[0], ny = current.y + d[1], nz = current.z + d[2];
-            if (nx >= 0 && nx < SIZE && ny >= 0 && ny < SIZE && nz >= 0 && nz < SIZE) {
-                neighbors.push(nodes[nx][ny][nz]);
-            }
-        });
-
-        for (let nb of neighbors) {
-            if (!nb.isWall) {
-                let d = current.g + 1;
-                if (d < nb.g) {
-                    nb.parent = current;
-                    nb.g = d;
-                    nb.f = nb.g + (Math.abs(nb.x - end.x) + Math.abs(nb.y - end.y) + Math.abs(nb.z - end.z));
-                    if (!openSet.includes(nb)) openSet.push(nb);
-                }
-            }
-        }
-    }
-    document.getElementById('status').innerText = "AUCUN CHEMIN POSSIBLE";
-}
-
-solve();
-
-// Animation
-function animate() {
-    requestAnimationFrame(animate);
-    scene.rotation.y += 0.002;
-    controls.update();
-    renderer.render(scene, camera);
-}
-animate();
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+    
+    <script src="script.js"></script>
+</body>
+</html>
