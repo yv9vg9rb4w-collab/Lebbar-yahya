@@ -3,57 +3,92 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CalcPro - A* Safe Mode</title>
+    <title>CalcPro - A* 3D Pro Mobile</title>
     <style>
-        body { margin: 0; background: #000; color: #00ffcc; font-family: sans-serif; overflow: hidden; }
-        #ui { position: absolute; top: 10px; width: 100%; text-align: center; z-index: 10; }
-        .back { position: absolute; bottom: 20px; left: 20px; background: #00ffcc; color: #000; 
-                padding: 15px; text-decoration: none; font-weight: bold; border-radius: 8px; }
+        body { margin: 0; background: #000; color: #00ffcc; font-family: monospace; overflow: hidden; }
+        canvas { display: block; }
+        #hud { position: absolute; top: 15px; left: 15px; background: rgba(0,20,20,0.8); 
+               padding: 10px; border: 1px solid #00ffcc; pointer-events: none; }
+        .btn { position: absolute; bottom: 20px; left: 20px; background: #00ffcc; color: #000; 
+                padding: 12px 20px; text-decoration: none; font-weight: bold; border-radius: 5px; }
     </style>
 </head>
 <body>
-    <div id="ui"><strong>ALGORITHME A* (MODE COMPATIBILITÉ)</strong></div>
-    <a href="index.html" class="back">⬅ RETOUR</a>
+    <div id="hud">
+        <strong>ALGO A* ENGINE</strong><br>
+        STATUS: <span id="st">ACTIVE</span>
+    </div>
+    <a href="index.html" class="btn">⬅ RETOUR</a>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <canvas id="c"></canvas>
 
     <script>
-        // Utilisation d'un moteur de rendu ultra basique pour iPhone
-        const scene = new THREE.Scene();
-        const camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 1000);
-        
-        // On essaie le WebGL, mais avec des options de secours
-        const renderer = new THREE.WebGLRenderer({ 
-            antialias: false, 
-            precision: "lowp" 
-        });
+        const canvas = document.getElementById('c');
+        const ctx = canvas.getContext('2d');
+        let w, h;
 
-        renderer.setSize(window.innerWidth, window.innerHeight);
-        document.body.appendChild(renderer.domElement);
+        // Configuration du cube 3D sans WebGL
+        let nodes = [];
+        const size = 6; // Plus petit pour le style
+        let angle = 0;
 
-        // Création d'une structure 3D simple (Fil de fer)
-        const geometry = new THREE.IcosahedronGeometry(2, 1);
-        const material = new THREE.MeshBasicMaterial({ color: 0x00ffcc, wireframe: true });
-        const sphere = new THREE.Mesh(geometry, material);
-        scene.add(sphere);
-
-        camera.position.z = 5;
-
-        function animate() {
-            requestAnimationFrame(animate);
-            sphere.rotation.x += 0.01;
-            sphere.rotation.y += 0.01;
-            renderer.render(scene, camera);
+        function resize() {
+            w = canvas.width = window.innerWidth;
+            h = canvas.height = window.innerHeight;
         }
 
-        // Gestion du redimensionnement
-        window.onresize = () => {
-            camera.aspect = window.innerWidth / window.innerHeight;
-            camera.updateProjectionMatrix();
-            renderer.setSize(window.innerWidth, window.innerHeight);
-        };
+        window.addEventListener('resize', resize);
+        resize();
 
-        animate();
+        // Création des points 3D
+        for(let x=0; x<size; x++) {
+            for(let y=0; y<size; y++) {
+                for(let z=0; z<size; z++) {
+                    if(Math.random() > 0.7) nodes.push({x: x-size/2, y: y-size/2, z: z-size/2});
+                }
+            }
+        }
+
+        function project(x, y, z) {
+            // Projection mathématique 3D vers 2D
+            const scale = 300 / (z + 10);
+            const x2d = x * scale + w / 2;
+            const y2d = y * scale + h / 2;
+            return {x: x2d, y: y2d, s: scale};
+        }
+
+        function draw() {
+            ctx.fillStyle = 'black';
+            ctx.fillRect(0, 0, w, h);
+            
+            angle += 0.01;
+            const cos = Math.cos(angle);
+            const sin = Math.sin(angle);
+
+            nodes.forEach(p => {
+                // Rotation
+                let x = p.x * cos - p.z * sin;
+                let z = p.x * sin + p.z * cos;
+                let y = p.y;
+
+                let proj = project(x, y, z);
+                
+                // Dessin du point style "Matrix/Pro"
+                ctx.fillStyle = '#00ffcc';
+                let size = proj.s * 0.5;
+                ctx.beginPath();
+                ctx.arc(proj.x, proj.y, size > 0 ? size : 0.1, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Effet de scanline pro
+                ctx.strokeStyle = 'rgba(0, 255, 204, 0.1)';
+                ctx.lineTo(proj.x, proj.y);
+            });
+
+            requestAnimationFrame(draw);
+        }
+
+        draw();
     </script>
 </body>
 </html>
