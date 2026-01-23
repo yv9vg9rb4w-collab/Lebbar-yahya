@@ -1,198 +1,86 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CalcPro - OS Terminal</title>
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=JetBrains+Mono&display=swap" rel="stylesheet">
-    <style>
-        :root {
-            --neon-cyan: #00ffcc;
-            --neon-pink: #ff007f;
-            --neon-purple: #9d50bb;
-            --bg-color: #020202;
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bienvenue dans LebbarAI</title>
 
-        body, html {
-            margin: 0;
-            padding: 0;
-            width: 100%;
-            height: 100%;
-            background: var(--bg-color);
-            color: white;
-            font-family: 'JetBrains Mono', monospace;
-            overflow: hidden;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
+<!-- Google Fonts -->
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
 
-        /* Fond de particules animées */
-        #bg-canvas {
-            position: absolute;
-            top: 0; left: 0;
-            z-index: -1;
-        }
+<style>
+  body {
+    margin: 0;
+    font-family: 'Orbitron', sans-serif;
+    background: linear-gradient(135deg, #0f0f1e, #1a1a2e);
+    color: #fff;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px;
+  }
 
-        /* Container Principal */
-        .terminal-container {
-            width: 90%;
-            max-width: 450px;
-            background: rgba(255, 255, 255, 0.03);
-            backdrop-filter: blur(15px);
-            -webkit-backdrop-filter: blur(15px);
-            border: 1px solid rgba(0, 255, 204, 0.2);
-            border-radius: 30px;
-            padding: 40px 20px;
-            text-align: center;
-            box-shadow: 0 0 40px rgba(0, 255, 204, 0.1);
-        }
+  h1 {
+    font-size: 3em;
+    margin-bottom: 10px;
+    color: #00ffcc;
+    text-shadow: 0 0 10px #00ffcc, 0 0 20px #00ccff;
+    animation: glow 2s ease-in-out infinite alternate;
+  }
 
-        .header h1 {
-            font-family: 'Orbitron', sans-serif;
-            font-size: 1.5rem;
-            letter-spacing: 5px;
-            color: var(--neon-cyan);
-            margin: 0;
-            text-shadow: 0 0 10px var(--neon-cyan);
-        }
+  @keyframes glow {
+    0% { text-shadow: 0 0 10px #00ffcc, 0 0 20px #00ccff; }
+    50% { text-shadow: 0 0 20px #00ffcc, 0 0 40px #00ccff; }
+    100% { text-shadow: 0 0 10px #00ffcc, 0 0 20px #00ccff; }
+  }
 
-        .status-bar {
-            font-size: 10px;
-            color: #555;
-            margin: 15px 0 30px 0;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-        }
+  p {
+    font-size: 1.5em;
+    margin-bottom: 40px;
+    color: #00ffccaa;
+  }
 
-        /* Menu de Boutons */
-        .nav-menu {
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-        }
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 20px;
+    width: 100%;
+    max-width: 800px;
+  }
 
-        .nav-item {
-            position: relative;
-            text-decoration: none;
-            padding: 18px;
-            background: rgba(0, 0, 0, 0.4);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            color: #fff;
-            border-radius: 15px;
-            font-family: 'Orbitron', sans-serif;
-            font-size: 0.8rem;
-            letter-spacing: 2px;
-            transition: 0.3s all ease;
-            overflow: hidden;
-        }
+  .card {
+    background: #222244;
+    border-radius: 15px;
+    padding: 20px;
+    text-align: center;
+    font-size: 1.1em;
+    font-weight: bold;
+    color: #00ffcc;
+    text-decoration: none;
+    box-shadow: 0 0 10px #00ffcc50;
+    transition: transform 0.2s, box-shadow 0.2s;
+  }
 
-        /* Effet de hover et couleur par bouton */
-        .nav-item:hover {
-            border-color: var(--neon-cyan);
-            box-shadow: 0 0 20px rgba(0, 255, 204, 0.3);
-            transform: translateY(-3px);
-            background: rgba(0, 255, 204, 0.05);
-        }
-
-        .nav-item.purple:hover { 
-            border-color: var(--neon-purple); 
-            box-shadow: 0 0 20px rgba(157, 80, 187, 0.3);
-        }
-
-        .nav-item.pink:hover { 
-            border-color: var(--neon-pink); 
-            box-shadow: 0 0 20px rgba(255, 0, 127, 0.3);
-        }
-
-        /* Petit scanline sur les boutons */
-        .nav-item::after {
-            content: '';
-            position: absolute;
-            top: 0; left: -100%;
-            width: 100%; height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
-            transition: 0.5s;
-        }
-
-        .nav-item:hover::after {
-            left: 100%;
-        }
-
-        .footer {
-            margin-top: 40px;
-            font-size: 10px;
-            color: #444;
-        }
-    </style>
+  .card:hover {
+    transform: scale(1.1);
+    box-shadow: 0 0 25px #00ffcc;
+  }
+</style>
 </head>
 <body>
 
-    <canvas id="bg-canvas"></canvas>
+  <h1>Bienvenue dans LebbarAI</h1>
+  <p>Choisis ton outil préféré 🚀</p>
 
-    <div class="terminal-container">
-        <div class="header">
-            <h1>CALC_PRO_OS</h1>
-            <div class="status-bar">System Status: <span id="time" style="color: var(--neon-cyan);">ONLINE</span></div>
-        </div>
+  <div class="grid">
+    <a href="3d.html" class="card">3D</a>
+    <a href="geometrie.html" class="card">Géométrie</a>
+    <a href="graphique.html" class="card">Graphique</a>
+    <a href="matrices.html" class="card">Matrices</a>
+    <a href="pc.html" class="card">PC</a>
+    <a href="scientifique.html" class="card">Scientifique</a>
+    <a href="symbolique.html" class="card">Symbolique</a>
+  </div>
 
-        <nav class="nav-menu">
-            <a href="pc.html" class="nav-item">Physique & Chimie</a>
-            <a href="symbolique.html" class="nav-item purple">Calcul Symbolique</a>
-            <a href="3d.html" class="nav-item pink">Scanner Biométrique 3D</a>
-        </nav>
-
-        <div class="footer">
-            &copy; 2026 - SECURE_TERMINAL_V9
-        </div>
-    </div>
-
-    <script>
-        // Animation du fond (Particules)
-        const canvas = document.getElementById('bg-canvas');
-        const ctx = canvas.getContext('2d');
-        let particles = [];
-
-        function init() {
-            canvas.width = window.innerWidth;
-            canvas.height = window.innerHeight;
-            particles = [];
-            for(let i=0; i<100; i++) {
-                particles.push({
-                    x: Math.random() * canvas.width,
-                    y: Math.random() * canvas.height,
-                    size: Math.random() * 2,
-                    speed: Math.random() * 0.5 + 0.1
-                });
-            }
-        }
-
-        function animate() {
-            ctx.fillStyle = 'rgba(2, 2, 2, 0.1)';
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-            
-            ctx.fillStyle = '#00ffcc';
-            particles.forEach(p => {
-                ctx.beginPath();
-                ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
-                ctx.fill();
-                p.y -= p.speed;
-                if(p.y < 0) p.y = canvas.height;
-            });
-            requestAnimationFrame(animate);
-        }
-
-        window.onresize = init;
-        init();
-        animate();
-
-        // Affichage de l'heure en temps réel
-        function updateTime() {
-            const now = new Date();
-            document.getElementById('time').innerText = now.getHours() + ":" + now.getMinutes().toString().padStart(2, '0') + " ONLINE";
-        }
-        setInterval(updateTime, 1000);
-        updateTime();
-    </script>
 </body>
 </html>
