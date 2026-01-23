@@ -5,162 +5,67 @@
 <title>CalcPro – Calcul Symbolique</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<!-- Math.js -->
 <script src="https://cdn.jsdelivr.net/npm/mathjs@11.11.0/lib/browser/math.js"></script>
 
 <style>
-body{
-  margin:0;
-  background:#0d0f1f;
-  font-family:Arial, Helvetica, sans-serif;
-  color:white;
-}
-
-header{
-  text-align:center;
-  padding:20px;
-  font-size:24px;
-  color:#00ffcc;
-}
-
-.container{
-  max-width:520px;
-  margin:auto;
-  background:#151933;
-  padding:20px;
-  border-radius:15px;
-  box-shadow:0 0 25px rgba(0,0,0,.6);
-}
-
-input{
-  width:100%;
-  padding:14px;
-  font-size:18px;
-  border-radius:10px;
-  border:none;
-  outline:none;
-  margin-bottom:12px;
-}
-
-.buttons{
-  display:grid;
-  grid-template-columns:repeat(2,1fr);
-  gap:10px;
-}
-
-button{
-  padding:14px;
-  font-size:15px;
-  border:none;
-  border-radius:10px;
-  cursor:pointer;
-  background:#00ffcc;
-  font-weight:bold;
-}
-
-button:hover{
-  background:#00d4aa;
-}
-
-.result{
-  margin-top:15px;
-  background:#0b0e1a;
-  padding:15px;
-  border-radius:10px;
-  min-height:70px;
-  font-size:16px;
-  word-wrap:break-word;
-}
-
-footer{
-  text-align:center;
-  margin-top:20px;
-  color:#aaa;
-  font-size:13px;
-}
+body{margin:0;background:#121212;color:white;font-family:Arial,sans-serif;}
+header{text-align:center;padding:20px;font-size:24px;color:#60a5fa;font-weight:bold;}
+.container{max-width:700px;margin:auto;background:#1e1e2f;padding:20px;border-radius:15px;box-shadow:0 0 25px rgba(0,0,0,.6);}
+input{width:100%;background:#0b0e1a;color:#60a5fa;border:none;padding:10px;border-radius:8px;margin-bottom:15px;font-size:16px;}
+.buttons{display:grid;grid-template-columns:repeat(auto-fit, minmax(120px,1fr));gap:15px;}
+button{padding:12px;font-size:15px;border:none;border-radius:12px;background:#2563eb;color:white;cursor:pointer;font-weight:bold;transition:0.2s;}
+button:hover{background:#3b82f6;transform:scale(1.05);}
+.result{margin-top:15px;background:#0b0e1a;padding:15px;border-radius:10px;color:#60a5fa;min-height:50px;font-size:16px;white-space:pre-wrap;}
 </style>
 </head>
 
 <body>
-
-<header>🧮 Calcul Symbolique</header>
-
+<header>🧮 Calcul Symbolique Pro</header>
 <div class="container">
+<input id="expr" type="text" placeholder="Exemple: x^2 + 2*x + 1">
 
-  <input id="expr" placeholder="Ex : x^2 + 2*x + 1">
-
-  <div class="buttons">
-    <button onclick="simplifier()">Simplifier</button>
-    <button onclick="factoriser()">Factoriser</button>
-    <button onclick="developper()">Développer</button>
-    <button onclick="deriver()">Dériver</button>
-    <button onclick="integrer()">Intégrer</button>
-    <button onclick="evaluer()">Évaluer x=2</button>
-  </div>
-
-  <div class="result" id="result">Résultat…</div>
-
+<div class="buttons">
+<button id="btnFactor">Factoriser</button>
+<button id="btnExpand">Développer</button>
+<button id="btnSimplify">Simplifier</button>
+<button id="btnSolve">Résoudre x=0</button>
 </div>
 
-<footer>CalcPro © Lebbar Yahya</footer>
+<div class="result" id="result">Résultat…</div>
+</div>
 
 <script>
-function getExpr(){
-  return document.getElementById("expr").value;
-}
+const exprInput=document.getElementById("expr");
+const result=document.getElementById("result");
 
-function show(txt){
-  document.getElementById("result").innerText = txt;
-}
-
-function simplifier(){
+document.getElementById("btnFactor").addEventListener("click",()=>{
   try{
-    show(math.simplify(getExpr()).toString());
-  }catch{
-    show("❌ Erreur de syntaxe");
-  }
-}
+    const expr=exprInput.value;
+    result.innerHTML="Factorisé : "+math.factor(expr).toString();
+  }catch(e){result.innerText="❌ Erreur : "+e;}
+});
 
-function factoriser(){
+document.getElementById("btnExpand").addEventListener("click",()=>{
   try{
-    show(math.factor(getExpr()).toString());
-  }catch{
-    show("❌ Impossible de factoriser");
-  }
-}
+    const expr=exprInput.value;
+    result.innerHTML="Développé : "+math.expand(expr).toString();
+  }catch(e){result.innerText="❌ Erreur : "+e;}
+});
 
-function developper(){
+document.getElementById("btnSimplify").addEventListener("click",()=>{
   try{
-    show(math.expand(getExpr()).toString());
-  }catch{
-    show("❌ Impossible de développer");
-  }
-}
+    const expr=exprInput.value;
+    result.innerHTML="Simplifié : "+math.simplify(expr).toString();
+  }catch(e){result.innerText="❌ Erreur : "+e;}
+});
 
-function deriver(){
+document.getElementById("btnSolve").addEventListener("click",()=>{
   try{
-    show(math.derivative(getExpr(),"x").toString());
-  }catch{
-    show("❌ Erreur de dérivation");
-  }
-}
-
-function integrer(){
-  try{
-    show(math.integral(getExpr(),"x").toString() + " + C");
-  }catch{
-    show("❌ Intégration non supportée");
-  }
-}
-
-function evaluer(){
-  try{
-    show(math.evaluate(getExpr(),{x:2}));
-  }catch{
-    show("❌ Erreur d’évaluation");
-  }
-}
+    const expr=exprInput.value;
+    const sol=math.solve(expr,'x');
+    result.innerHTML="Solutions x : "+sol;
+  }catch(e){result.innerText="❌ Erreur : "+e;}
+});
 </script>
-
 </body>
 </html>
