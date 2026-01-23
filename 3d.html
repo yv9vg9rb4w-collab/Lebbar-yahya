@@ -1,48 +1,76 @@
 <!DOCTYPE html>
-<html>
+<html lang="fr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CalcPro 3D</title>
+    <title>CalcPro - 3D Safe Mode</title>
     <style>
-        body { margin: 0; background-color: black; color: #00ffcc; font-family: sans-serif; text-align: center; }
-        canvas { display: block; }
-        #msg { position: absolute; top: 10px; width: 100%; pointer-events: none; }
-        .back { position: absolute; bottom: 20px; left: 20px; background: #00ffcc; color: black; padding: 10px; text-decoration: none; border-radius: 5px; font-weight: bold; }
+        body { margin: 0; background: #000; color: #00ffcc; font-family: sans-serif; overflow: hidden; text-align: center; }
+        canvas { display: block; width: 100vw; height: 100vh; }
+        #overlay { position: absolute; top: 10px; width: 100%; z-index: 5; pointer-events: none; }
+        .btn { position: absolute; bottom: 20px; left: 20px; background: #00ffcc; color: #000; padding: 12px; text-decoration: none; font-weight: bold; border-radius: 5px; z-index: 10; }
+        #error-msg { display: none; padding: 50px 20px; color: #ff4444; }
     </style>
 </head>
 <body>
-    <div id="msg">SYSTEME 3D ACTIF</div>
-    <a href="index.html" class="back">RETOUR</a>
+
+    <div id="overlay">
+        <strong>NAVIGATEUR 3D</strong><br>
+        <small id="status">Chargement...</small>
+    </div>
+
+    <div id="error-msg">
+        <h2>⚠️ Erreur WebGL</h2>
+        <p>Ton téléphone bloque l'accélération 3D.</p>
+        <p>Essaie de fermer tes autres onglets ou de désactiver le mode "Économie d'énergie".</p>
+    </div>
+
+    <a href="index.html" class="btn">⬅ RETOUR</a>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 
     <script>
-        // Test de sécurité
-        try {
-            var scene = new THREE.Scene();
-            var camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 1000);
-            var renderer = new THREE.WebGLRenderer({ antialias: true });
-            renderer.setSize(window.innerWidth, window.innerHeight);
-            document.body.appendChild(renderer.domElement);
+        function init() {
+            try {
+                const scene = new THREE.Scene();
+                // Utilisation d'un moteur de rendu plus simple (fail-safe)
+                const renderer = new THREE.WebGLRenderer({ 
+                    antialias: false, 
+                    precision: "lowp", 
+                    powerPreference: "low-power" 
+                });
+                
+                renderer.setSize(window.innerWidth, window.innerHeight);
+                document.body.appendChild(renderer.domElement);
 
-            var geometry = new THREE.BoxGeometry(1, 1, 1);
-            var material = new THREE.MeshBasicMaterial({ color: 0x00ffcc, wireframe: true });
-            var cube = new THREE.Mesh(geometry, material);
-            scene.add(cube);
+                const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+                camera.position.z = 5;
 
-            camera.position.z = 5;
+                // Cube simple en fil de fer (très léger)
+                const geometry = new THREE.BoxGeometry(2, 2, 2);
+                const material = new THREE.MeshBasicMaterial({ color: 0x00ffcc, wireframe: true });
+                const cube = new THREE.Mesh(geometry, material);
+                scene.add(cube);
 
-            function animate() {
-                requestAnimationFrame(animate);
-                cube.rotation.x += 0.01;
-                cube.rotation.y += 0.01;
-                renderer.render(scene, camera);
+                document.getElementById('status').innerText = "MODE FLUIDE ACTIF";
+
+                function animate() {
+                    requestAnimationFrame(animate);
+                    cube.rotation.x += 0.01;
+                    cube.rotation.y += 0.01;
+                    renderer.render(scene, camera);
+                }
+                animate();
+
+            } catch (e) {
+                console.error(e);
+                document.getElementById('error-msg').style.display = 'block';
+                document.getElementById('status').innerText = "ERREUR CRITIQUE";
             }
-            animate();
-        } catch (e) {
-            document.getElementById('msg').innerHTML = "Erreur : " + e.message;
         }
+
+        // Lancer après un court délai pour laisser le téléphone respirer
+        setTimeout(init, 500);
     </script>
 </body>
 </html>
