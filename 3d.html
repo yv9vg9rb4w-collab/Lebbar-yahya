@@ -2,25 +2,105 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <title>CalcPro - A* Ultra Pro</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>CalcPro 3D - Mobile</title>
     <style>
-        body { margin: 0; background: #000; overflow: hidden; font-family: 'Courier New', monospace; }
-        #hud { position: absolute; top: 20px; left: 20px; color: #00ffcc; background: rgba(0,25,25,0.8); 
-               padding: 15px; border: 1px solid #00ffcc; z-index: 100; border-radius: 4px; pointer-events: none; }
-        .back { position: absolute; bottom: 20px; left: 20px; background: #00ffcc; color: #000; 
-                padding: 12px 20px; text-decoration: none; font-weight: bold; border-radius: 4px; z-index: 100; }
+        body { margin: 0; background: #000; overflow: hidden; font-family: sans-serif; }
+        #hud { position: absolute; top: 10px; left: 10px; color: #00ffcc; background: rgba(0,0,0,0.7); 
+               padding: 10px; border: 1px solid #00ffcc; font-size: 12px; z-index: 10; }
+        .nav-btn { position: absolute; bottom: 20px; padding: 12px 20px; font-weight: bold; 
+                   text-decoration: none; border-radius: 5px; z-index: 10; }
+        .back { left: 20px; background: #333; color: #00ffcc; border: 1px solid #00ffcc; }
+        .regen { right: 20px; background: #00ffcc; color: #000; border: none; }
     </style>
 </head>
 <body>
-    <div id="hud">
-        <div style="font-weight: bold; font-size: 1.2em;">NAV_CORE_V4</div>
-        <div id="status">INITIALISATION...</div>
-    </div>
-    <a href="index.html" class="back">⬅ MENU PRINCIPAL</a>
+    <div id="hud">SYSTEME A* 3D<br>Statut: <span id="status">Chargement...</span></div>
+    <a href="index.html" class="nav-btn back">RETOUR</a>
+    <button class="nav-btn regen" onclick="location.reload()">REGEN</button>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
-    
-    <script src="script.js?v=1.0"></script>
+
+    <script>
+        const SIZE = 10; // Réduit pour plus de fluidité sur téléphone
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setPixelRatio(window.devicePixelRatio);
+        document.body.appendChild(renderer.domElement);
+
+        const controls = new THREE.OrbitControls(camera, renderer.domElement);
+        camera.position.set(15, 15, 15);
+
+        const nodes = [];
+        const group = new THREE.Group();
+        const geo = new THREE.BoxGeometry(0.6, 0.6, 0.6);
+
+        for(let x=0; x<SIZE; x++) {
+            nodes[x] = [];
+            for(let y=0; y<SIZE; y++) {
+                nodes[x][y] = [];
+                for(let z=0; z<SIZE; z++) {
+                    const wall = Math.random() < 0.2 && (x+y+z > 2);
+                    const mat = new THREE.MeshBasicMaterial({
+                        color: wall ? 0x222222 : 0x00ffcc,
+                        transparent: true,
+                        opacity: wall ? 0.5 : 0.1
+                    });
+                    const cube = new THREE.Mesh(geo, mat);
+                    cube.position.set(x, y, z);
+                    group.add(cube);
+                    nodes[x][y][z] = { x,y,z, wall, g:999, f:999, parent:null, mesh:cube };
+                }
+            }
+        }
+        scene.add(group);
+
+        function solve() {
+            let start = nodes[0][0][0], end = nodes[SIZE-1][SIZE-1][SIZE-1];
+            let open = [start]; start.g = 0;
+            while(open.length > 0) {
+                open.sort((a,b) => a.f - b.f);
+                let curr = open.shift();
+                if(curr === end) {
+                    document.getElementById('status').innerText = "PATH FOUND";
+                    while(curr) {
+                        curr.mesh.material.color.set(0xffffff);
+                        curr.mesh.material.opacity = 1;
+                        curr = curr.parent;
+                    }
+                    return;
+                }
+                [[1,0,0],[-1,0,0],[0,1,0],[0,-1,0],[0,0,1],[0,0,-1]].forEach(d => {
+                    let nx=curr.x+d[0], ny=curr.y+d[1], nz=curr.z+d[2];
+                    if(nx>=0 && nx<SIZE && ny>=0 && ny<SIZE && nz>=0 && nz<SIZE) {
+                        let nb = nodes[nx][ny][nz];
+                        if(!nb.wall && curr.g+1 < nb.g) {
+                            nb.parent = curr; nb.g = curr.g+1;
+                            nb.f = nb.g + Math.abs(nx-end.x)+Math.abs(ny-end.y)+Math.abs(nz-end.z);
+                            open.push(nb);
+                        }
+                    }
+                });
+            }
+        }
+
+        solve();
+        function animate() {
+            requestAnimationFrame(animate);
+            group.rotation.y += 0.005;
+            controls.update();
+            renderer.render(scene, camera);
+        }
+        animate();
+
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+    </script>
 </body>
 </html>
