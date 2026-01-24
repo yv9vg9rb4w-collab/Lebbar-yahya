@@ -2,68 +2,159 @@
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
-<title>Intégrale Numérique</title>
+<title>CalcPro - Intégrale Numérique</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <style>
+/* FOND ET TEXTE */
 body{
-    font-family: Arial, sans-serif;
-    background:#0f172a;
+    font-family: 'Segoe UI', sans-serif;
+    background: linear-gradient(135deg,#0f172a,#1e293b);
     color:white;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    padding:40px;
+    min-height:100vh;
+    box-sizing:border-box;
+}
+
+/* TITRE */
+h1{
+    font-size:3em;
+    color:#38bdf8;
+    margin-bottom:20px;
     text-align:center;
-    padding:50px;
 }
-input, button{
-    padding:10px;
-    margin:5px;
-    font-size:16px;
+
+/* INPUTS */
+input{
+    padding:15px;
+    margin:10px;
+    font-size:20px;
+    border-radius:8px;
+    border:none;
+    width:250px;
+    text-align:center;
 }
+
+/* BOUTONS CALCUL */
 button{
-    background:#38bdf8;
+    padding:15px 25px;
+    margin:10px;
+    font-size:20px;
+    border-radius:8px;
     border:none;
     cursor:pointer;
     font-weight:bold;
+    background:#38bdf8;
+    color:#0f172a;
+    transition:0.3s;
 }
 button:hover{
     background:#0ea5e9;
 }
+
+/* CONTAINER BOUTONS RAPIDES */
+.quick-btns{
+    margin:20px 0;
+    display:flex;
+    flex-wrap:wrap;
+    justify-content:center;
+    gap:10px;
+}
+.quick-btns button{
+    width:70px;
+}
+
+/* RÉSULTAT */
 .result{
-    margin-top:20px;
-    padding:10px;
+    margin-top:30px;
+    padding:25px;
     background:#020617;
-    display:inline-block;
+    border-radius:10px;
+    min-width:280px;
+    font-size:24px;
+    font-weight:bold;
+    text-align:center;
+}
+
+/* FOOTER */
+footer{
+    margin-top:50px;
+    font-size:18px;
+    color:#38bdf8;
+    font-weight:bold;
+    text-align:center;
 }
 </style>
 </head>
 <body>
 
-<h1>∫ Intégrale Numérique</h1>
-<p>Fonction ∫(x) (ex: x*x, sin(x), cos(x), tan(x))</p>
-<input id="∫x" placeholder="∫(x)">
-<input id="a" placeholder="a">
-<input id="b" placeholder="b">
+<h1>CalcPro ∫ Intégrale Numérique</h1>
+
+<!-- INPUTS -->
+<div>
+    <input id="fx" placeholder="f(x) (ex: x*x, sin(x))">
+</div>
+<div>
+    <input id="a" placeholder="a">
+    <input id="b" placeholder="b">
+</div>
+
+<!-- BOUTON CALCUL -->
 <button onclick="calculerIntegral()">Calculer</button>
 
-<div class="result" id="res"></div>
+<!-- BOUTONS RAPIDES -->
+<div class="quick-btns">
+    <button onclick="ajouter('sin(')">sin</button>
+    <button onclick="ajouter('cos(')">cos</button>
+    <button onclick="ajouter('tan(')">tan</button>
+    <button onclick="ajouter('3.14')">π</button>
+    <button onclick="ajouter('*')">*</button>
+    <button onclick="ajouter('+')">+</button>
+    <button onclick="ajouter('-')">-</button>
+</div>
+
+<!-- RÉSULTAT -->
+<div class="result" id="res">Résultat ici</div>
+
+<!-- FOOTER -->
+<footer>CalcPro © Lebbar Yahya</footer>
 
 <script>
+function ajouter(val){
+    fx.value += val;
+}
+
 function calculerIntegral(){
+    if(!fx.value || !a.value || !b.value){
+        res.innerText = "Veuillez remplir tous les champs";
+        return;
+    }
+    
     let fxInput = fx.value
         .replaceAll("sin","Math.sin")
         .replaceAll("cos","Math.cos")
         .replaceAll("tan","Math.tan")
-        .replaceAll("tg","Math.tan"); // accepte tg aussi
+        .replaceAll("tg","Math.tan")
+        .replaceAll("3.14","Math.PI");
 
-    let f = new Function("x","return "+fxInput);
-    let aVal = parseFloat(a.value);
-    let bVal = parseFloat(b.value);
-    let n = 1000; // nombre de subdivisions
-    let h = (bVal - aVal) / n;
-    let somme = 0;
-    for(let i=0; i<n; i++){
-        let x1 = aVal + i*h;
-        let x2 = x1 + h;
-        somme += (f(x1) + f(x2))/2 * h;
+    try{
+        let f = new Function("x","return "+fxInput);
+        let aVal = parseFloat(a.value);
+        let bVal = parseFloat(b.value);
+        let n = 1000;
+        let h = (bVal - aVal)/n;
+        let somme = 0;
+        for(let i=0; i<n; i++){
+            let x1 = aVal + i*h;
+            let x2 = x1 + h;
+            somme += (f(x1) + f(x2))/2 * h;
+        }
+        res.innerText = "∫ f(x) dx ≈ " + somme.toFixed(5);
+    }catch(e){
+        res.innerText = "Erreur dans la fonction";
     }
-    res.innerText = "∫(x) dx ≈ " + somme;
 }
 </script>
 
