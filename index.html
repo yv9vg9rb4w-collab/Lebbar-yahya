@@ -1,79 +1,201 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8">
-  <title>CalcPro</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <style>
-    body {
-      background-color: #121212;
-      color: white;
-      font-family: Arial, sans-serif;
-      margin: 0;
-      padding: 20px;
-    }
-    h1 {
-      text-align: center;
-      color: #00ffcc;
-    }
-    .tool-list {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-      gap: 20px;
-      margin-top: 30px;
-    }
-    .tool {
-      background-color: #1e1e1e;
-      border-radius: 10px;
-      padding: 20px;
-      text-align: center;
-      box-shadow: 0 0 10px #00ffcc55;
-      transition: transform 0.2s;
-      cursor: pointer;
-    }
-    .tool:hover {
-      transform: scale(1.05);
-    }
-    .icon {
-      font-size: 40px;
-      margin-bottom: 10px;
-    }
-    footer {
-      margin-top: 40px;
-      text-align: center;
-      font-size: 14px;
-      color: #aaa;
-    }
-  </style>
-</head>
-<body>
-  <h1>Bienvenue sur <strong>CalcPro</strong></h1>
-  <div class="tool-list">
-    <div class="tool" onclick="location.href='graphique.html'">
-      <div class="icon">📈</div>Calculatrice graphique
-    </div>
-    <div class="tool" onclick="location.href='scientifique.html'">
-      <div class="icon">🧪</div>Calculatrice scientifique
-    </div>
-    <div class="tool" onclick="location.href='matrices.html'">
-      <div class="icon">📊</div>Calculatrice matrices
-    </div>
-    <div class="tool" onclick="location.href='geometrie.html'">
-      <div class="icon">📐</div>Outil géométrie
-    </div>
-    <div class="tool" onclick="location.href='3d.html'">
-      <div class="icon">🪩</div>Algorithme 3D
-    </div>
-    <div class="tool" onclick="location.href='pc.html'">
-      <div class="icon">⚡️</div>Calculatrice P.C
-    </div>
-    <div class="tool" onclick="location.href='symbolique.html'">
-      <div class="icon">🧮</div>Calculatrice symbolique
-    </div>
-   </div>
+<meta charset="UTF-8">
+<title>CalcPro | Calculatrices & Cours</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <footer>
-    Dévloppeur: <strong>Lebbar Yahya</strong>
-  </footer>
+<style>
+:root{
+  --bg:#0f0f0f;
+  --card:#1b1b1b;
+  --accent:#00ffcc;
+  --text:#ffffff;
+  --muted:#aaaaaa;
+}
+
+*{
+  box-sizing:border-box;
+}
+
+body{
+  margin:0;
+  padding:20px;
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial;
+  background:var(--bg);
+  color:var(--text);
+}
+
+/* HEADER */
+header{
+  text-align:center;
+  margin-bottom:40px;
+}
+
+header h1{
+  margin:0;
+  font-size:2.5em;
+  color:var(--accent);
+}
+
+header p{
+  margin-top:10px;
+  color:var(--muted);
+  font-size:16px;
+}
+
+/* TOOLS */
+.tool-list{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+  gap:25px;
+  max-width:1100px;
+  margin:auto;
+}
+
+.tool{
+  background:var(--card);
+  border-radius:16px;
+  padding:25px 20px;
+  text-align:center;
+  cursor:pointer;
+  transition:0.25s ease;
+  box-shadow:0 0 15px rgba(0,255,204,0.15);
+}
+
+.tool:hover{
+  transform:translateY(-6px) scale(1.03);
+  box-shadow:0 0 25px rgba(0,255,204,0.35);
+}
+
+.icon{
+  font-size:42px;
+  margin-bottom:12px;
+}
+
+.tool h3{
+  margin:10px 0 6px;
+  font-size:18px;
+}
+
+.tool span{
+  font-size:14px;
+  color:var(--muted);
+}
+
+/* CONTACT */
+.contact{
+  margin:60px auto 30px;
+  max-width:800px;
+  background:var(--card);
+  border-radius:18px;
+  padding:30px;
+  text-align:center;
+  box-shadow:0 0 20px rgba(0,255,204,0.25);
+}
+
+.contact h2{
+  color:var(--accent);
+  margin-bottom:10px;
+}
+
+.contact p{
+  color:var(--muted);
+  margin-bottom:25px;
+  line-height:1.6;
+}
+
+.contact a{
+  display:inline-block;
+  padding:15px 30px;
+  background:var(--accent);
+  color:#000;
+  font-weight:bold;
+  border-radius:30px;
+  text-decoration:none;
+  font-size:18px;
+}
+
+/* FOOTER */
+footer{
+  margin-top:40px;
+  text-align:center;
+  font-size:14px;
+  color:var(--muted);
+}
+</style>
+</head>
+
+<body>
+
+<header>
+  <h1>CalcPro</h1>
+  <p>Calculatrices avancées & cours de soutien informatique</p>
+</header>
+
+<section class="tool-list">
+
+  <div class="tool" onclick="location.href='graphique.html'">
+    <div class="icon">📈</div>
+    <h3>Calculatrice graphique</h3>
+    <span>Tracer des fonctions</span>
+  </div>
+
+  <div class="tool" onclick="location.href='scientifique.html'">
+    <div class="icon">🧪</div>
+    <h3>Calculatrice scientifique</h3>
+    <span>Mode iPhone, fonctions avancées</span>
+  </div>
+
+  <div class="tool" onclick="location.href='matrices.html'">
+    <div class="icon">📊</div>
+    <h3>Calculatrice matrices</h3>
+    <span>Déterminant, inverse</span>
+  </div>
+
+  <div class="tool" onclick="location.href='geometrie.html'">
+    <div class="icon">📐</div>
+    <h3>Outil géométrie</h3>
+    <span>Figures et mesures</span>
+  </div>
+
+  <div class="tool" onclick="location.href='3d.html'">
+    <div class="icon">🪩</div>
+    <h3>Algorithme 3D</h3>
+    <span>Visualisation spatiale</span>
+  </div>
+
+  <div class="tool" onclick="location.href='pc.html'">
+    <div class="icon">⚡️</div>
+    <h3>Calculatrice P.C</h3>
+    <span>Physique & chimie</span>
+  </div>
+
+  <div class="tool" onclick="location.href='symbolique.html'">
+    <div class="icon">🧮</div>
+    <h3>Calculatrice symbolique</h3>
+    <span>Factoriser, développer</span>
+  </div>
+
+</section>
+
+<section class="contact">
+  <h2>📚 Cours de soutien informatique</h2>
+  <p>
+    Cours professionnels en informatique et P.C.<br>
+    Pour collégiens, lycéens et étudiants.<br>
+    <strong>Cours payants – contact direct Prof Lebbar Rachid</strong>
+  </p>
+
+  <!-- 🔴 REMPLACE LE NUMÉRO CI-DESSOUS -->
+  <a href="tel:+212600000000">
+    📞 Appeler : +212 06 70 89 25 06 
+  </a>
+</section>
+
+<footer>
+  Développeur : <strong>Lebbar Yahya</strong>
+</footer>
+
 </body>
 </html>
