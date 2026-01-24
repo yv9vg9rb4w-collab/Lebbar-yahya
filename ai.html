@@ -2,77 +2,47 @@
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
-<title>CalcPro AI | Assistant intelligent</title>
+<title>CalcPro AI</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <style>
-:root{
-  --bg:#0f0f0f;
-  --card:#1b1b1b;
-  --accent:#00ffcc;
-  --text:#ffffff;
-  --muted:#aaaaaa;
-}
-*{box-sizing:border-box;}
-body{margin:0;padding:20px;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial;background:var(--bg);color:var(--text);}
-header{text-align:center;margin-bottom:30px;}
-header h1{color:var(--accent);margin:0;font-size:2.4em;}
-header p{color:var(--muted);margin-top:10px;}
-.container{max-width:900px;margin:auto;background:var(--card);border-radius:18px;padding:25px;box-shadow:0 0 25px rgba(0,255,204,0.2);}
-textarea{width:100%;min-height:120px;background:#0c0c0c;color:white;border:1px solid #333;border-radius:12px;padding:15px;font-size:16px;resize:none;}
-button{margin-top:15px;padding:14px 28px;background:var(--accent);color:#000;font-weight:bold;border:none;border-radius:30px;font-size:16px;cursor:pointer;}
+body{margin:0;padding:20px;font-family:Arial;background:#121212;color:white;}
+h1{text-align:center;color:#00ffcc;}
+.container{max-width:800px;margin:auto;background:#1e1e1e;padding:20px;border-radius:16px;}
+textarea{width:100%;height:120px;background:#0c0c0c;color:white;border-radius:12px;padding:10px;border:none;font-size:16px;}
+button{margin-top:10px;padding:12px 20px;border:none;border-radius:20px;background:#00ffcc;color:#000;font-weight:bold;cursor:pointer;}
 button:hover{opacity:0.9;}
-.response{margin-top:25px;background:#101010;border-radius:14px;padding:20px;color:#eaeaea;min-height:80px;}
-.back{display:block;margin:30px auto 0;text-align:center;color:var(--accent);text-decoration:none;font-weight:bold;}
-footer{margin-top:40px;text-align:center;font-size:14px;color:var(--muted);}
+.response{margin-top:20px;padding:15px;background:#101010;border-radius:12px;min-height:80px;}
+footer{text-align:center;margin-top:30px;color:#aaa;}
 </style>
 </head>
 <body>
 
-<header>
-  <h1>🤖 CalcPro AI</h1>
-  <p>Assistant intelligent pour mathématiques et informatique</p>
-</header>
+<h1>🤖 CalcPro AI</h1>
 
 <div class="container">
-  <h2>Pose ta question</h2>
-  <p style="color:#aaa;">Mathématiques, informatique, algorithmes, explications de cours…</p>
-
-  <textarea id="question" placeholder="Ex : Explique la dérivée de x²"></textarea>
-  <button onclick="repondre()">Demander à l’IA</button>
-
-  <div class="response" id="response">
-    La réponse de l’IA apparaîtra ici…
-  </div>
+<textarea id="question" placeholder="Ex : 1+1, sqrt(9), 2^3, sin(30)"></textarea>
+<button onclick="repondre()">Demander à l’IA</button>
+<div class="response" id="response">La réponse apparaîtra ici…</div>
 </div>
 
-<a class="back" href="index.html">⬅ Retour à l’accueil</a>
-
-<footer>
-  Développeur : <strong>Lebbar Yahya</strong>
-</footer>
+<footer>Développeur : <strong>Lebbar Yahya</strong></footer>
 
 <script>
 async function repondre(){
   const q = document.getElementById("question").value.trim();
   const r = document.getElementById("response");
-
-  if(q === ""){
-    r.innerHTML = "❌ Écris une question.";
-    return;
-  }
+  if(!q){ r.innerHTML="❌ Écris une question."; return; }
 
   r.innerHTML = "⏳ L’IA réfléchit...";
 
   try{
     const res = await fetch("http://localhost:3000/ask", {
-      method: "POST",
-      headers: {"Content-Type":"application/json"},
+      method:"POST",
+      headers:{"Content-Type":"application/json"},
       body: JSON.stringify({ question: q })
     });
-
     const data = await res.json();
-    r.innerHTML = "🤖 <strong>Réponse IA :</strong><br><br>" + data.answer;
-
+    r.innerHTML = "🤖 <strong>Réponse IA :</strong><br><br>" + (data.answer || "❌ Pas de réponse");
   }catch(e){
     r.innerHTML = "❌ Impossible de contacter l’IA.";
   }
