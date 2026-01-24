@@ -1,33 +1,26 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8">
-  <title>CalcPro - IA</title>
-  <style>
-    body { font-family: Arial, sans-serif; background:#121212; color:white; padding:20px; }
-    input, button { padding:10px; margin:5px; }
-    #response { margin-top:20px; padding:10px; background:#1e1e1e; border-radius:5px; }
-  </style>
+<meta charset="UTF-8">
+<title>IA CalcPro</title>
 </head>
 <body>
-  <h1>🤖 Pose une question à l’IA</h1>
-  <input id="prompt" type="text" placeholder="Écris ta question..." size="50">
-  <button onclick="askAI()">Envoyer</button>
+<h1>🤖 Pose une question à l'IA</h1>
+<input type="text" id="question" placeholder="Tape ta question">
+<button onclick="ask()">Poser la question</button>
+<p id="answer"></p>
 
-  <div id="response"></div>
-
-  <script>
-async function askAI() {
-  const prompt = document.getElementById("prompt").value;
-  const res = await fetch("/api/ask", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ prompt })
+<script>
+async function ask() {
+  const question = document.getElementById('question').value;
+  const res = await fetch('http://localhost:3000/ask', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ question })
   });
   const data = await res.json();
-  document.getElementById("response").innerText = data.reply;
+  document.getElementById('answer').innerText = data.answer;
 }
 </script>
-
 </body>
 </html>
