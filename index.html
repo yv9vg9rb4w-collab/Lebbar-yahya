@@ -14,7 +14,9 @@
   --muted:#aaaaaa;
 }
 
-*{ box-sizing:border-box; }
+*{
+  box-sizing:border-box;
+}
 
 body{
   margin:0;
@@ -25,9 +27,22 @@ body{
 }
 
 /* HEADER */
-header{ text-align:center; margin-bottom:40px; }
-header h1{ margin:0; font-size:2.5em; color:var(--accent); }
-header p{ margin-top:10px; color:var(--muted); font-size:16px; }
+header{
+  text-align:center;
+  margin-bottom:40px;
+}
+
+header h1{
+  margin:0;
+  font-size:2.5em;
+  color:var(--accent);
+}
+
+header p{
+  margin-top:10px;
+  color:var(--muted);
+  font-size:16px;
+}
 
 /* TOOLS */
 .tool-list{
@@ -37,6 +52,7 @@ header p{ margin-top:10px; color:var(--muted); font-size:16px; }
   max-width:1100px;
   margin:auto;
 }
+
 .tool{
   background:var(--card);
   border-radius:16px;
@@ -46,13 +62,26 @@ header p{ margin-top:10px; color:var(--muted); font-size:16px; }
   transition:0.25s ease;
   box-shadow:0 0 15px rgba(0,255,204,0.15);
 }
+
 .tool:hover{
   transform:translateY(-6px) scale(1.03);
   box-shadow:0 0 25px rgba(0,255,204,0.35);
 }
-.icon{ font-size:42px; margin-bottom:12px; }
-.tool h3{ margin:10px 0 6px; font-size:18px; }
-.tool span{ font-size:14px; color:var(--muted); }
+
+.icon{
+  font-size:42px;
+  margin-bottom:12px;
+}
+
+.tool h3{
+  margin:10px 0 6px;
+  font-size:18px;
+}
+
+.tool span{
+  font-size:14px;
+  color:var(--muted);
+}
 
 /* CONTACT */
 .contact{
@@ -64,8 +93,18 @@ header p{ margin-top:10px; color:var(--muted); font-size:16px; }
   text-align:center;
   box-shadow:0 0 20px rgba(0,255,204,0.25);
 }
-.contact h2{ color:var(--accent); margin-bottom:10px; }
-.contact p{ color:var(--muted); margin-bottom:25px; line-height:1.6; }
+
+.contact h2{
+  color:var(--accent);
+  margin-bottom:10px;
+}
+
+.contact p{
+  color:var(--muted);
+  margin-bottom:25px;
+  line-height:1.6;
+}
+
 .contact a{
   display:inline-block;
   padding:15px 30px;
@@ -78,21 +117,12 @@ header p{ margin-top:10px; color:var(--muted); font-size:16px; }
 }
 
 /* FOOTER */
-footer{ margin-top:40px; text-align:center; font-size:14px; color:var(--muted); }
-
-/* AI SECTION */
-.ai-box{
-  margin:60px auto;
-  max-width:800px;
-  background:var(--card);
-  border-radius:18px;
-  padding:30px;
-  box-shadow:0 0 20px rgba(0,255,204,0.25);
+footer{
+  margin-top:40px;
+  text-align:center;
+  font-size:14px;
+  color:var(--muted);
 }
-.ai-box h2{ color:var(--accent); margin-bottom:15px; }
-.ai-box input{ width:70%; padding:10px; border-radius:8px; border:none; margin-right:10px; }
-.ai-box button{ padding:10px 20px; border:none; border-radius:8px; background:var(--accent); color:#000; font-weight:bold; cursor:pointer; }
-.ai-box #response{ margin-top:20px; text-align:left; background:#111; padding:15px; border-radius:10px; min-height:40px; }
 </style>
 </head>
 
@@ -104,36 +134,56 @@ footer{ margin-top:40px; text-align:center; font-size:14px; color:var(--muted); 
 </header>
 
 <section class="tool-list">
-  <!-- tes cartes existantes -->
-  <div class="tool" onclick="location.href='graphique.html'"><div class="icon">📈</div><h3>Calculatrice graphique</h3><span>Tracer des fonctions</span></div>
-  <div class="tool" onclick="location.href='scientifique.html'"><div class="icon">🧪</div><h3>Calculatrice scientifique</h3><span>Mode iPhone, fonctions avancées</span></div>
-  <div class="tool" onclick="location.href='matrices.html'"><div class="icon">📊</div><h3>Calculatrice matrices</h3><span>Déterminant, inverse</span></div>
-  <div class="tool" onclick="location.href='geometrie.html'"><div class="icon">📐</div><h3>Outil géométrie</h3><span>Figures et mesures</span></div>
-  <div class="tool" onclick="location.href='3d.html'"><div class="icon">🪩</div><h3>Algorithme 3D</h3><span>Visualisation spatiale</span></div>
-  <div class="tool" onclick="location.href='pc.html'"><div class="icon">⚡️</div><h3>Calculatrice P.C</h3><span>Physique & chimie</span></div>
-  <div class="tool" onclick="location.href='symbolique.html'"><div class="icon">🧮</div><h3>Calculatrice symbolique</h3><span>Factoriser, développer</span></div>
-</section>
 
-<!-- 🔥 Section IA intégrée -->
-<section class="ai-box">
-  <h2>🤖 CalcPro.AI – Pose ta question</h2>
-  <input id="prompt" type="text" placeholder="Écris ta question...">
-  <button onclick="askAI()">Envoyer</button>
-  <div id="response"></div>
-</section>
+  <div class="tool" onclick="location.href='graphique.html'">
+    <div class="icon">📈</div>
+    <h3>Calculatrice graphique</h3>
+    <span>Tracer des fonctions</span>
+  </div>
 
-<script>
-async function askAI() {
-  const prompt = document.getElementById("prompt").value;
-  const res = await fetch("/api/ask", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ prompt })
-  });
-  const data = await res.json();
-  document.getElementById("response").innerText = data.reply;
-}
-</script>
+  <div class="tool" onclick="location.href='scientifique.html'">
+    <div class="icon">🧪</div>
+    <h3>Calculatrice scientifique</h3>
+    <span>Mode iPhone, fonctions avancées</span>
+  </div>
+
+  <div class="tool" onclick="location.href='matrices.html'">
+    <div class="icon">📊</div>
+    <h3>Calculatrice matrices</h3>
+    <span>Déterminant, inverse</span>
+  </div>
+
+  <div class="tool" onclick="location.href='geometrie.html'">
+    <div class="icon">📐</div>
+    <h3>Outil géométrie</h3>
+    <span>Figures et mesures</span>
+  </div>
+
+  <div class="tool" onclick="location.href='3d.html'">
+    <div class="icon">🪩</div>
+    <h3>Algorithme 3D</h3>
+    <span>Visualisation spatiale</span>
+  </div>
+
+  <div class="tool" onclick="location.href='pc.html'">
+    <div class="icon">⚡️</div>
+    <h3>Calculatrice P.C</h3>
+    <span>Physique & chimie</span>
+  </div>
+
+  <div class="tool" onclick="location.href='symbolique.html'">
+    <div class="icon">🧮</div>
+    <h3>Calculatrice symbolique</h3>
+    <span>Factoriser, développer</span>
+  </div>
+
+  <div class="tool" onclick="location.href='ai.html'">
+    <div class="icon">🤖</div>
+    <h3>CalcPro.AI</h3>
+    <span>Artificial intelligence</span>
+  </div>
+
+</section>
 
 <section class="contact">
   <h2>📚 Cours de soutien </h2>
@@ -142,25 +192,16 @@ async function askAI() {
     Pour collégiens, lycéens et préparation de concours.<br>
     <strong>Cours payants – contact direct Prof Lebbar Rachid</strong>
   </p>
-  <a href="tel:+2120670892506">📞 Appeler : +212 06 70 89 25 06</a>
+
+  <!-- 🔴 REMPLACE LE NUMÉRO CI-DESSOUS -->
+  <a href="tel:+2120670892506">
+    📞 Appeler : +212 06 70 89 25 06 
+  </a>
 </section>
 
 <footer>
   Développeur : <strong>Lebbar Yahya</strong>
 </footer>
-
-<script>
-async function askAI() {
-  const prompt = document.getElementById("prompt").value;
-  const res = await fetch("/api/ask", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ prompt })
-  });
-  const data = await res.json();
-  document.getElementById("response").innerText = data.reply;
-}
-</script>
 
 </body>
 </html>
