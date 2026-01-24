@@ -1,18 +1,36 @@
+// server.cjs
 const express = require('express');
 const path = require('path');
+const bodyParser = require('body-parser');
+require('dotenv').config(); // ✅ charge le fichier .env
+const OpenAI = require('openai');
 
 const app = express();
 const PORT = 3000;
 
-// Servir les fichiers statiques depuis le dossier "public"
-app.use(express.static(path.join(__dirname, 'public')));
+app.use(bodyParser.json());
+app.use(express.static(path.join(__dirname)));
 
-// Route principale
-app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'index.html'));
+const client = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY, // ✅ clé sécurisée
 });
 
-// Lancer le serveur
+app.post('/api/ask', async (req, res) => {
+  try {
+    const { prompt } = req.body;
+
+    const completion = await client.chat.completions.create({
+      model: "gpt-4o-mini",
+      messages: [{ role: "user", content: prompt }],
+    });
+
+    res.json({ reply: completion.choices[0].message.content });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Erreur avec OpenAI" });
+  }
+});
+
 app.listen(PORT, () => {
   console.log(`🚀 Serveur lancé sur http://localhost:${PORT}`);
 });
