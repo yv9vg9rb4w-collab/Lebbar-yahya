@@ -36,7 +36,7 @@ button:hover{
 <body>
 
 <h1>∫ Intégrale Numérique</h1>
-<p>Fonction f(x) (ex: x*x)</p>
+<p>Fonction f(x) (ex: x*x, sin(x), cos(x), tan(x))</p>
 <input id="fx" placeholder="f(x)">
 <input id="a" placeholder="a">
 <input id="b" placeholder="b">
@@ -46,7 +46,13 @@ button:hover{
 
 <script>
 function calculerIntegral(){
-    let f = new Function("x","return "+fx.value);
+    let fxInput = fx.value
+        .replaceAll("sin","Math.sin")
+        .replaceAll("cos","Math.cos")
+        .replaceAll("tan","Math.tan")
+        .replaceAll("tg","Math.tan"); // accepte tg aussi
+
+    let f = new Function("x","return "+fxInput);
     let aVal = parseFloat(a.value);
     let bVal = parseFloat(b.value);
     let n = 1000; // nombre de subdivisions
@@ -57,7 +63,7 @@ function calculerIntegral(){
         let x2 = x1 + h;
         somme += (f(x1) + f(x2))/2 * h;
     }
-    res.innerText = "∫ f(x) dx ≈ " + somme;
+    res.innerText = "∫(x) dx ≈ " + somme;
 }
 </script>
 
