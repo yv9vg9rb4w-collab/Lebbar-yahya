@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
-<title>CalcPro – Géométrie Avancée</title>
+<title>CalcPro – Mode BAC</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <style>
@@ -20,11 +20,14 @@ header{
   border-bottom:1px solid #333;
 }
 .container{
-  max-width:600px;
+  max-width:520px;
   margin:auto;
   padding:20px;
 }
-input, textarea{
+h3{
+  margin-top:20px;
+}
+input{
   width:100%;
   padding:10px;
   margin:6px 0;
@@ -35,6 +38,7 @@ input, textarea{
 button{
   width:100%;
   padding:12px;
+  margin-top:10px;
   background:#00c853;
   border:none;
   font-size:16px;
@@ -46,7 +50,7 @@ button{
   background:#111;
   border:1px solid #333;
   font-size:14px;
-  line-height:1.6;
+  line-height:1.8;
 }
 footer{
   text-align:center;
@@ -59,20 +63,15 @@ footer{
 
 <body>
 
-<header>📐 CalcPro – Géométrie Avancée</header>
+<header>📐 CalcPro – MODE BAC 100 %</header>
 
 <div class="container">
 
-<h3>📍 Points</h3>
+<h3>Coordonnées</h3>
 <input id="x1" placeholder="x₁">
 <input id="y1" placeholder="y₁">
 <input id="x2" placeholder="x₂">
 <input id="y2" placeholder="y₂">
-<input id="x3" placeholder="x₃ (optionnel)">
-<input id="y3" placeholder="y₃ (optionnel)">
-
-<h3>🔺 Polygone (format : x,y)</h3>
-<textarea id="poly" placeholder="Ex: 0,0  4,0  4,3  0,3"></textarea>
 
 <button onclick="calculer()">Calculer</button>
 
@@ -83,53 +82,44 @@ footer{
 <footer>CalcPro © Lebbar Yahya</footer>
 
 <script>
-const d=(x1,y1,x2,y2)=>Math.hypot(x2-x1,y2-y1);
-
-function angle(a,b,c){
-  return Math.acos((a*a+b*b-c*c)/(2*a*b))*180/Math.PI;
-}
-
 function calculer(){
-  const A={x:+x1.value,y:+y1.value};
-  const B={x:+x2.value,y:+y2.value};
-  const C={x:+x3.value,y:+y3.value};
+  const x1=+document.getElementById("x1").value;
+  const y1=+document.getElementById("y1").value;
+  const x2=+document.getElementById("x2").value;
+  const y2=+document.getElementById("y2").value;
 
-  let t="📏 SEGMENT AB<br>";
-  const AB=d(A.x,A.y,B.x,B.y);
-  t+=`AB = √[(x₂-x₁)²+(y₂-y₁)²] = ${AB.toFixed(3)}<br>`;
-  t+=`Milieu M = (${((A.x+B.x)/2).toFixed(2)}, ${((A.y+B.y)/2).toFixed(2)})<br>`;
+  const d=Math.hypot(x2-x1,y2-y1);
+  const mx=(x1+x2)/2;
+  const my=(y1+y2)/2;
 
-  t+=`<br>🧮 VECTEUR AB<br>`;
-  t+=`AB⃗ = (${(B.x-A.x)}, ${(B.y-A.y)})<br>`;
-  t+=`||AB⃗|| = ${AB.toFixed(3)}<br>`;
+  const r=d;
+  const D=2*r;
+  const A=Math.PI*r*r;
 
-  if(!isNaN(C.x)){
-    const BC=d(B.x,B.y,C.x,C.y);
-    const AC=d(A.x,A.y,C.x,C.y);
-    const P=AB+BC+AC;
-
-    t+=`<br>🔺 TRIANGLE ABC<br>`;
-    t+=`Périmètre = ${P.toFixed(3)}<br>`;
-    t+=`Aire = ${Math.abs(A.x*(B.y-C.y)+B.x*(C.y-A.y)+C.x*(A.y-B.y))/2}<br>`;
-    t+=`Angle ABC = ${angle(AB,BC,AC).toFixed(2)}°<br>`;
+  let a="indéfini";
+  let b="—";
+  if(x2!==x1){
+    a=(y2-y1)/(x2-x1);
+    b=y1-a*x1;
   }
 
-  const poly=poly.value.trim();
-  if(poly){
-    const pts=poly.split(/\s+/).map(p=>p.split(',').map(Number));
-    let area=0, per=0;
-    for(let i=0;i<pts.length;i++){
-      let [x1,y1]=pts[i];
-      let [x2,y2]=pts[(i+1)%pts.length];
-      area+=x1*y2-x2*y1;
-      per+=Math.hypot(x2-x1,y2-y1);
-    }
-    t+=`<br>🔷 POLYGONE<br>`;
-    t+=`Aire = ${(Math.abs(area)/2).toFixed(3)}<br>`;
-    t+=`Périmètre = ${per.toFixed(3)}<br>`;
+  let t="";
+  t+="Distance AB : "+d.toFixed(3)+"<br>";
+  t+="Milieu M : ("+mx.toFixed(2)+" ; "+my.toFixed(2)+")<br><br>";
+
+  t+="Cercle (centre A)<br>";
+  t+="Rayon : "+r.toFixed(3)+"<br>";
+  t+="Diamètre : "+D.toFixed(3)+"<br>";
+  t+="Aire : "+A.toFixed(3)+"<br><br>";
+
+  t+="Droite (AB)<br>";
+  if(a==="indéfini"){
+    t+="Équation : x = "+x1.toFixed(2);
+  }else{
+    t+="Équation : y = "+a.toFixed(3)+"x + "+b.toFixed(3);
   }
 
-  res.innerHTML=t;
+  document.getElementById("res").innerHTML=t;
 }
 </script>
 
