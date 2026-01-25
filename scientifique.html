@@ -98,7 +98,7 @@ button:active{
         <button class="btn-number" onclick="addInput('4')">4</button>
         <button class="btn-number" onclick="addInput('5')">5</button>
         <button class="btn-number" onclick="addInput('6')">6</button>
-        <button class="btn-op" onclick="addInput('*')">×</button>
+        <button class="btn-op" onclick="addInput('×')">×</button>
         <button class="btn-op" onclick="addInput('/')">÷</button>
 
         <!-- Numbers 1-3 -->
@@ -112,7 +112,6 @@ button:active{
         <button class="btn-number" onclick="addInput('0')">0</button>
         <button class="btn-number" onclick="addInput('.')">.</button>
         <button class="btn-func" onclick="addInput('x')">x</button>
-        <button class="btn-func" onclick="addInput('ANS')">ANS</button>
         <button class="btn-op" onclick="deleteChar()">⌫</button>
         <button class="btn-equal" onclick="calculate()">=</button>
     </div>
@@ -153,9 +152,7 @@ function calculate(){
         .replace(/tan\(/gi,'Math.tan(')
         .replace(/ln\(/gi,'Math.log(')
         .replace(/log\(/gi,'Math.log10(')
-        .replace(/ANS/g,lastResult)
-        .replace(/x/gi,xValue); // X remplacé par valeur numérique
-
+    
     let result;
     try{
         result = eval(exp);
