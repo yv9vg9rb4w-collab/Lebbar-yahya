@@ -2,95 +2,157 @@
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
-<title>CalcPro – Fonctions Interactives</title>
+<title>CalcPro Graphique</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
 <style>
-body{margin:0;background:#0d0d0d;color:white;font-family:'Roboto',sans-serif;}
-header{background:#111;padding:20px;text-align:center;font-size:24px;font-weight:700;border-bottom:2px solid #00c853;}
-.container{display:flex;flex-wrap:wrap;max-width:1200px;margin:auto;padding:20px;}
-canvas{background:#1a1a1a;border:1px solid #333;border-radius:8px;margin-right:20px;}
-.controls{flex:1;min-width:300px;}
-h3{color:#00c853;margin-top:10px;}
-.result{background:#111;padding:16px;border-radius:8px;border:1px solid #333;margin-top:10px;line-height:1.5;}
-button{padding:10px 20px;background:#00c853;border:none;border-radius:6px;color:white;font-weight:700;cursor:pointer;margin-top:10px;}
+body{
+    margin:0;
+    background:#0f172a;
+    color:white;
+    font-family:Arial, sans-serif;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    height:100vh;
+}
+.box{
+    width:95%;
+    max-width:700px;
+    background:#020617;
+    border-radius:18px;
+    padding:20px;
+    box-shadow:0 20px 40px rgba(0,0,0,.6);
+}
+.title{
+    text-align:center;
+    font-weight:bold;
+    color:#38bdf8;
+    margin-bottom:15px;
+    font-size:22px;
+}
+input{
+    width:100%;
+    padding:12px;
+    font-size:18px;
+    border:none;
+    border-radius:12px;
+    outline:none;
+    background:#020617;
+    color:#22c55e;
+    border:1px solid #334155;
+}
+canvas{
+    margin-top:15px;
+    background:#020617;
+    border-radius:14px;
+}
+.result{
+    margin-top:12px;
+    font-size:16px;
+    color:#facc15;
+}
 </style>
 </head>
+
 <body>
-<header>📊 CalcPro – Fonctions Interactives</header>
-<div class="container">
-<canvas id="graph" width="700" height="500"></canvas>
-<div class="controls">
-<h3>Parabole: y = ax² + bx + c</h3>
-<input type="number" id="a" placeholder="a (ex: 1)" value="1">
-<input type="number" id="b" placeholder="b (ex: 0)" value="0">
-<input type="number" id="c" placeholder="c (ex: 0)" value="0">
 
-<h3>Hyperbole: y = k / x</h3>
-<input type="number" id="k" placeholder="k (ex: 1)" value="1">
+<div class="box">
+<div class="title">📈 CalcPro • GRAPH CALCULATOR</div>
 
-<button onclick="drawGraph()">Tracer</button>
-
-<div class="result" id="res">Résultats affichés ici...</div>
-</div>
+<input id="fx" placeholder="Ex : x^2 , 1/x , √(X)" oninput="draw()">
+<div class="result" id="res"></div>
+<canvas id="graph"></canvas>
 </div>
 
 <script>
-const canvas=document.getElementById('graph');
-const ctx=canvas.getContext('2d');
-const width=canvas.width,height=canvas.height;
-const centerX=width/2,centerY=height/2;
+const ctx = document.getElementById('graph');
+let chart;
 
-function drawAxes(){
-  ctx.clearRect(0,0,width,height);
-  ctx.strokeStyle='#555';ctx.lineWidth=1;
-  // Axes X et Y
-  ctx.beginPath();ctx.moveTo(0,centerY);ctx.lineTo(width,centerY);ctx.stroke();
-  ctx.beginPath();ctx.moveTo(centerX,0);ctx.lineTo(centerX,height);ctx.stroke();
+function draw(){
+    let f = document.getElementById("fx").value;
+    const res = document.getElementById("res");
+    res.innerHTML = "";
+
+    if(!f) return;
+
+    let xValues = [];
+    let yValues = [];
+
+    for(let x=-10; x<=10; x+=0.1){
+        let e = f
+            .replace(/\^/g,"**")
+            .replace(/√/g,"Math.sqrt")
+            .replace(/sin/g,"Math.sin")
+            .replace(/cos/g,"Math.cos")
+            .replace(/tan/g,"Math.tan")
+            .replace(/log/g,"Math.log10")
+            .replace(/ln/g,"Math.log")
+            .replace(/π/g,"Math.PI")
+            // Remplacer X et x par la valeur
+            .replace(/x/gi, `(${x})`);
+
+        try{
+            let y = eval(e);
+            if(isFinite(y)){
+                xValues.push(x.toFixed(2));
+                yValues.push(y);
+            }
+        }catch{}
+    }
+
+    if(chart) chart.destroy();
+
+    chart = new Chart(ctx,{
+        type:'line',
+        data:{
+            labels:xValues,
+            datasets:[{
+                label:"y = "+f,
+                data:yValues,
+                borderWidth:2,
+                borderColor:'#38bdf8',
+                backgroundColor:'rgba(56, 189, 248,0.2)',
+                tension:0.2,
+                pointRadius:0
+            }]
+        },
+        options:{
+            responsive:true,
+            interaction:{mode:'index',intersect:false},
+            scales:{
+                x:{grid:{color:"#1e293b"}, title:{display:true,text:'x',color:'#22c55e',font:{size:16}}},
+                y:{grid:{color:"#1e293b"}, title:{display:true,text:'y',color:'#22c55e',font:{size:16}}}
+            },
+            plugins:{
+                legend:{labels:{color:"white"}}
+            }
+        }
+    });
+
+    // Calcul automatique des points clés
+    try{
+        let fNorm = f.replace(/X/g,"x"); // Normaliser X -> x pour les calculs
+        if(fNorm.includes("x^2")){
+            let a=1,b=0,c=0;
+            const match = fNorm.match(/([+-]?\d*)x\^2/);
+            if(match && match[1]) a = Number(match[1]);
+            const matchB = fNorm.match(/([+-]?\d*)x(?!\^)/);
+            if(matchB && matchB[1]) b = Number(matchB[1]);
+            const matchC = fNorm.match(/([+-]?\d+)$/);
+            if(matchC) c = Number(matchC[1]);
+            const xs = -b/(2*a);
+            const ys = a*xs*xs+b*xs+c;
+            res.innerHTML = `Parabole → Sommet : (${xs.toFixed(2)}, ${ys.toFixed(2)})`;
+        } else if(fNorm.includes("1/x")){
+            res.innerHTML = `Hyperbole → Asymptotes : x=0, y=0`;
+        }
+    }catch{}
 }
-
-function drawGraph(){
-  drawAxes();
-  const a=+document.getElementById('a').value;
-  const b=+document.getElementById('b').value;
-  const c=+document.getElementById('c').value;
-  const k=+document.getElementById('k').value;
-
-  // Parabole
-  ctx.strokeStyle='#00e5ff';ctx.lineWidth=2;ctx.beginPath();
-  for(let px=-centerX;px<=centerX;px+=1){
-    const x=px/20;
-    const y=a*x*x+b*x+c;
-    const py=centerY-y*20;
-    if(px==-centerX){ctx.moveTo(centerX+px,py);}else{ctx.lineTo(centerX+px,py);}
-  }
-  ctx.stroke();
-
-  // Hyperbole
-  ctx.strokeStyle='#ff79c6';ctx.lineWidth=2;ctx.beginPath();
-  for(let px=1;px<=centerX;px+=1){
-    let x=px/20;
-    let y=k/x;let py=centerY-y*20;ctx.lineTo(centerX+px,py);ctx.moveTo(centerX+px,py);
-    y=-k/x;py=centerY-y*20;ctx.lineTo(centerX+px,py);ctx.moveTo(centerX+px,py);
-  }
-  ctx.stroke();
-
-  // Résultats parabole
-  const xSommet=-b/(2*a);
-  const ySommet=a*xSommet*xSommet+b*xSommet+c;
-  const delta=b*b-4*a*c;
-  let inters="";
-  if(delta>=0){
-    const x1=(-b+Math.sqrt(delta))/(2*a);
-    const x2=(-b-Math.sqrt(delta))/(2*a);
-    inters=`Intersections x: ${x1.toFixed(2)}, ${x2.toFixed(2)}<br>`;
-  }else{inters="Pas d'intersection réelle avec x<br>";}
-  const y0=c;
-  document.getElementById('res').innerHTML=
-    `<b>Parabole</b><br>Sommet: (${xSommet.toFixed(2)}, ${ySommet.toFixed(2)})<br>`+
-    `Intersection y-axis: ${y0}<br>${inters}`+
-    `<b>Hyperbole</b><br>Asymptotes: x=0, y=0<br>k=${k}`;
-}
-drawGraph();
+draw();
 </script>
+
 </body>
 </html>
