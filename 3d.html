@@ -3,103 +3,103 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>CalcPro Final Engine</title>
+    <title>CalcPro True 3D</title>
     <style>
-        body { margin: 0; overflow: hidden; background-color: #000; font-family: sans-serif; }
-        canvas { display: block; width: 100vw; height: 100vh; }
+        body { margin: 0; overflow: hidden; background: radial-gradient(circle, #111 0%, #000 100%); font-family: sans-serif; }
+        canvas { display: block; }
         #ui {
             position: absolute; width: 100%; height: 100%;
             pointer-events: none; z-index: 10;
             display: flex; flex-direction: column; justify-content: space-between;
             padding: 20px; box-sizing: border-box;
         }
-        .text-neon { color: #00ff88; text-shadow: 0 0 10px #00ff88; font-weight: bold; }
-        .info { font-family: monospace; font-size: 10px; opacity: 0.8; }
+        .neon { color: #00ff88; text-shadow: 0 0 15px #00ff88; font-family: monospace; font-weight: bold; }
     </style>
 </head>
 <body>
 
     <div id="ui">
-        <div class="info text-neon">SYSTEM: CALCPRO_V6<br>ENGINE: DUAL_MODE_ACTIVE</div>
-        <div class="text-neon" style="text-align: center; font-size: 18px;">CalcPro © Lebbar Yahya</div>
+        <div class="neon">MODE: TRUE_3D_SOLID<br>LIGHTING: ENABLED</div>
+        <div class="neon" style="text-align: center; font-size: 20px;">CalcPro © Lebbar Yahya</div>
     </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 
     <script>
         window.onload = function() {
-            const container = document.body;
+            // Configuration de la scène
+            const scene = new THREE.Scene();
+            const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
             
-            // Tentative de lancement WebGL
-            try {
-                const renderer = new THREE.WebGLRenderer({ antialias: true, failIfMajorPerformanceCaveat: false });
-                renderer.setSize(window.innerWidth, window.innerHeight);
-                renderer.setPixelRatio(window.devicePixelRatio);
-                container.appendChild(renderer.domElement);
+            // On force le moteur à utiliser le mode le plus compatible possible
+            const renderer = new THREE.WebGLRenderer({ 
+                antialias: true, 
+                alpha: true,
+                precision: "mediump" // Plus compatible pour les puces mobiles
+            });
+            
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.setPixelRatio(window.devicePixelRatio);
+            document.body.appendChild(renderer.domElement);
 
-                const scene = new THREE.Scene();
-                const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-                camera.position.z = 25;
+            // --- LUMIÈRE (C'est ça qui fait le "True 3D") ---
+            const ambientLight = new THREE.AmbientLight(0x404040, 2); // Lumière globale
+            scene.add(ambientLight);
 
-                // Géométrie simplifiée pour mobile
-                const geometry = new THREE.IcosahedronGeometry(10, 2);
-                const material = new THREE.PointsMaterial({
-                    size: 0.2,
-                    color: 0x00ff88,
-                    transparent: true,
-                    blending: THREE.AdditiveBlending
-                });
+            const pointLight = new THREE.PointLight(0x00ff88, 5, 50); // Lumière de projecteur
+            pointLight.position.set(10, 10, 10);
+            scene.add(pointLight);
 
-                const points = new THREE.Points(geometry, material);
-                scene.add(points);
+            // --- L'OBJET SOLIDE (MESH) ---
+            // Un TorusKnot avec des faces réelles
+            const geometry = new THREE.TorusKnotGeometry(7, 2.5, 100, 16);
+            
+            // Matériau "Phong" : il brille et réagit à la lumière
+            const material = new THREE.MeshPhongMaterial({
+                color: 0x00ff88,
+                shininess: 100,
+                specular: 0xffffff,
+                flatShading: false // Lissage des faces pour un look pro
+            });
 
-                function animate() {
-                    requestAnimationFrame(animate);
-                    points.rotation.y += 0.01;
-                    points.rotation.x += 0.005;
-                    const hue = (Date.now() * 0.0002) % 1;
-                    material.color.setHSL(hue, 0.8, 0.5);
-                    renderer.render(scene, camera);
-                }
-                animate();
+            const mesh = new THREE.Mesh(geometry, material);
+            scene.add(mesh);
 
-            } catch (e) {
-                // --- MODE DE SECOURS (Si WebGL est bloqué) ---
-                console.log("Passage en mode Canvas 2D...");
-                const canvas = document.createElement('canvas');
-                const ctx = canvas.getContext('2d');
-                container.appendChild(canvas);
-                canvas.width = window.innerWidth;
-                canvas.height = window.innerHeight;
+            camera.position.z = 25;
 
-                const particles = [];
-                for(let i=0; i<100; i++) {
-                    particles.push({
-                        x: Math.random() * canvas.width,
-                        y: Math.random() * canvas.height,
-                        vx: (Math.random() - 0.5) * 2,
-                        vy: (Math.random() - 0.5) * 2
-                    });
-                }
+            // --- ANIMATION ---
+            function animate() {
+                requestAnimationFrame(animate);
 
-                function drawCanvas() {
-                    ctx.fillStyle = 'black';
-                    ctx.fillRect(0, 0, canvas.width, canvas.height);
-                    ctx.fillStyle = '#00ff88';
-                    
-                    particles.forEach(p => {
-                        p.x += p.vx;
-                        p.y += p.vy;
-                        if(p.x < 0 || p.x > canvas.width) p.vx *= -1;
-                        if(p.y < 0 || p.y > canvas.height) p.vy *= -1;
-                        ctx.beginPath();
-                        ctx.arc(p.x, p.y, 2, 0, Math.PI * 2);
-                        ctx.fill();
-                    });
-                    requestAnimationFrame(drawCanvas);
-                }
-                drawCanvas();
+                // Rotation fluide
+                mesh.rotation.y += 0.01;
+                mesh.rotation.x += 0.005;
+
+                // Faire bouger la lumière pour voir les reflets
+                const time = Date.now() * 0.001;
+                pointLight.position.x = Math.sin(time) * 15;
+                pointLight.position.y = Math.cos(time) * 15;
+
+                renderer.render(scene, camera);
             }
+
+            // Gestion du tactile pour l'interaction
+            let isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+            window.addEventListener(isMobile ? 'touchmove' : 'mousemove', (e) => {
+                const x = isMobile ? e.touches[0].clientX : e.clientX;
+                const y = isMobile ? e.touches[0].clientY : e.clientY;
+                
+                mesh.rotation.z = (x / window.innerWidth) * 2;
+            });
+
+            animate();
+
+            // Redimensionnement
+            window.addEventListener('resize', () => {
+                camera.aspect = window.innerWidth / window.innerHeight;
+                camera.updateProjectionMatrix();
+                renderer.setSize(window.innerWidth, window.innerHeight);
+            });
         };
     </script>
 </body>
