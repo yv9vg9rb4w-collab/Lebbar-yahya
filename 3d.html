@@ -14,33 +14,37 @@
             padding: 20px; box-sizing: border-box;
         }
         .text-neon { color: #00ff88; text-shadow: 0 0 10px #00ff88; font-weight: bold; }
-        .info { font-family: monospace; font-size: 10px; opacity: 0.7; }
+        .info { font-family: monospace; font-size: 10px; opacity: 0.8; }
     </style>
 </head>
 <body>
 
     <div id="ui">
-        <div class="info text-neon">ALGO: V5_STABLE<br>CORE: CALCPRO_V5<br>MODE: HYBRID_AUTO</div>
-        <div id="footer" class="text-neon" style="text-align: center; font-size: 18px;">CalcPro © Lebbar Yahya</div>
+        <div class="info text-neon">SYSTEM: CALCPRO_V6<br>ENGINE: DUAL_MODE_ACTIVE</div>
+        <div class="text-neon" style="text-align: center; font-size: 18px;">CalcPro © Lebbar Yahya</div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/three@0.145.0/build/three.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 
     <script>
         window.onload = function() {
+            const container = document.body;
+            
+            // Tentative de lancement WebGL
             try {
+                const renderer = new THREE.WebGLRenderer({ antialias: true, failIfMajorPerformanceCaveat: false });
+                renderer.setSize(window.innerWidth, window.innerHeight);
+                renderer.setPixelRatio(window.devicePixelRatio);
+                container.appendChild(renderer.domElement);
+
                 const scene = new THREE.Scene();
                 const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-                const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false });
-                
-                renderer.setSize(window.innerWidth, window.innerHeight);
-                renderer.setPixelRatio(window.devicePixelRatio > 1 ? 2 : 1);
-                document.body.appendChild(renderer.domElement);
+                camera.position.z = 25;
 
-                // Forme 3D
-                const geometry = new THREE.TorusKnotGeometry(8, 2, 100, 16);
+                // Géométrie simplifiée pour mobile
+                const geometry = new THREE.IcosahedronGeometry(10, 2);
                 const material = new THREE.PointsMaterial({
-                    size: 0.15,
+                    size: 0.2,
                     color: 0x00ff88,
                     transparent: true,
                     blending: THREE.AdditiveBlending
@@ -49,37 +53,52 @@
                 const points = new THREE.Points(geometry, material);
                 scene.add(points);
 
-                camera.position.z = 25;
-
-                // Animation
                 function animate() {
                     requestAnimationFrame(animate);
                     points.rotation.y += 0.01;
                     points.rotation.x += 0.005;
-                    
-                    // Couleur changeante
-                    const time = Date.now() * 0.0005;
-                    material.color.setHSL(time % 1, 0.8, 0.5);
-                    
+                    const hue = (Date.now() * 0.0002) % 1;
+                    material.color.setHSL(hue, 0.8, 0.5);
                     renderer.render(scene, camera);
                 }
-
                 animate();
 
-                // Gestion tactile
-                window.addEventListener('touchstart', () => {
-                    material.size = 0.3; // Grossit au toucher
-                    setTimeout(() => material.size = 0.15, 200);
-                });
-
-                window.addEventListener('resize', () => {
-                    camera.aspect = window.innerWidth / window.innerHeight;
-                    camera.updateProjectionMatrix();
-                    renderer.setSize(window.innerWidth, window.innerHeight);
-                });
-
             } catch (e) {
-                document.getElementById('ui').innerHTML += '<div style="color:red">Erreur WebGL: ' + e.message + '</div>';
+                // --- MODE DE SECOURS (Si WebGL est bloqué) ---
+                console.log("Passage en mode Canvas 2D...");
+                const canvas = document.createElement('canvas');
+                const ctx = canvas.getContext('2d');
+                container.appendChild(canvas);
+                canvas.width = window.innerWidth;
+                canvas.height = window.innerHeight;
+
+                const particles = [];
+                for(let i=0; i<100; i++) {
+                    particles.push({
+                        x: Math.random() * canvas.width,
+                        y: Math.random() * canvas.height,
+                        vx: (Math.random() - 0.5) * 2,
+                        vy: (Math.random() - 0.5) * 2
+                    });
+                }
+
+                function drawCanvas() {
+                    ctx.fillStyle = 'black';
+                    ctx.fillRect(0, 0, canvas.width, canvas.height);
+                    ctx.fillStyle = '#00ff88';
+                    
+                    particles.forEach(p => {
+                        p.x += p.vx;
+                        p.y += p.vy;
+                        if(p.x < 0 || p.x > canvas.width) p.vx *= -1;
+                        if(p.y < 0 || p.y > canvas.height) p.vy *= -1;
+                        ctx.beginPath();
+                        ctx.arc(p.x, p.y, 2, 0, Math.PI * 2);
+                        ctx.fill();
+                    });
+                    requestAnimationFrame(drawCanvas);
+                }
+                drawCanvas();
             }
         };
     </script>
