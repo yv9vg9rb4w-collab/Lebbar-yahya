@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
-<title>CalcPro Dark Black Scientific Calculator</title>
+<title>CalcPro Dark Scientific Calculator</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <style>
 body{
@@ -19,7 +19,7 @@ body{
     background:#111;
     border-radius:40px;
     padding:20px;
-    width:360px;
+    width:380px;
     box-shadow:0 10px 30px rgba(0,0,0,0.8);
 }
 .display{
@@ -61,7 +61,7 @@ button:active{
     box-shadow:0 2px #000;
 }
 /* Color styling */
-.btn-number { background:#222; color:#22c55e; }
+.btn-number { background:#222; color:#fff; } /* chiffres blancs */
 .btn-op { background:#ff9500; color:#fff; }
 .btn-func { background:#333; color:#38bdf8; }
 .btn-equal { background:#34c759; color:#fff; }
@@ -112,6 +112,7 @@ button:active{
         <button class="btn-number" onclick="addInput('0')">0</button>
         <button class="btn-number" onclick="addInput('.')">.</button>
         <button class="btn-func" onclick="addInput('x')">x</button>
+        <button class="btn-func" onclick="addInput('ANS')">ANS</button>
         <button class="btn-op" onclick="deleteChar()">⌫</button>
         <button class="btn-equal" onclick="calculate()">=</button>
     </div>
@@ -121,6 +122,8 @@ button:active{
 let display = document.getElementById('display');
 let historyDiv = document.getElementById('history');
 let input = '';
+let lastResult = 0;
+let xValue = 5; // valeur par défaut pour X
 
 function addInput(value){
     input += value;
@@ -150,7 +153,8 @@ function calculate(){
         .replace(/tan\(/gi,'Math.tan(')
         .replace(/ln\(/gi,'Math.log(')
         .replace(/log\(/gi,'Math.log10(')
-        .replace(/x/gi,'5'); // tu peux changer la valeur de X ici
+        .replace(/ANS/g,lastResult)
+        .replace(/x/gi,xValue); // X remplacé par valeur numérique
 
     let result;
     try{
@@ -162,6 +166,7 @@ function calculate(){
 
     historyDiv.innerHTML += `<div>${input} = ${result}</div>`;
     display.innerText = result;
+    lastResult = result !== 'Erreur' ? result : lastResult; // mise à jour ANS
     input = '';
 }
 </script>
