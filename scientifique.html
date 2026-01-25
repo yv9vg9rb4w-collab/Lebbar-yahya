@@ -2,29 +2,29 @@
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
-<title>CalcPro iPhone Scientific Calculator</title>
+<title>CalcPro Dark Scientific Calculator</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
 <style>
-body {
+body{
     margin:0;
-    background:#d1d1d6;
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background:#0f172a;
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
     display:flex;
     justify-content:center;
     align-items:center;
     height:100vh;
+    color:white;
 }
-.calculator {
-    background:#f0f0f0;
+.calculator{
+    background:#020617;
     border-radius:40px;
     padding:20px;
     width:360px;
-    box-shadow:0 10px 30px rgba(0,0,0,0.3);
+    box-shadow:0 10px 30px rgba(0,0,0,0.7);
 }
-.display {
-    background:#000;
-    color:#fff;
+.display{
+    background:#1e1e2f;
+    color:#22c55e;
     font-size:32px;
     border-radius:20px;
     padding:15px;
@@ -33,35 +33,37 @@ body {
     min-height:60px;
     overflow-x:auto;
 }
-.history {
+.history{
     max-height:100px;
     overflow-y:auto;
     font-size:14px;
     margin-bottom:10px;
     padding:5px;
+    background:#111;
+    border-radius:12px;
 }
-.button-grid {
+.button-grid{
     display:grid;
     grid-template-columns: repeat(5, 1fr);
     gap:10px;
 }
-button {
+button{
     padding:18px;
     font-size:18px;
     border-radius:50%;
     border:none;
     cursor:pointer;
     transition:0.1s;
-    box-shadow:0 5px #aaa;
+    box-shadow:0 5px #111;
 }
-button:active {
+button:active{
     transform:translateY(2px);
-    box-shadow:0 2px #888;
+    box-shadow:0 2px #111;
 }
 /* Color styling */
-.btn-number { background:#e0e0e0; color:#000; }
+.btn-number { background:#1e1e2f; color:#22c55e; }
 .btn-op { background:#ff9500; color:#fff; }
-.btn-func { background:#d4d4d2; color:#000; }
+.btn-func { background:#252526; color:#38bdf8; }
 .btn-equal { background:#34c759; color:#fff; }
 </style>
 </head>
@@ -136,4 +138,33 @@ function deleteChar(){
 }
 
 function calculate(){
-    if(!input) ret
+    if(!input) return;
+
+    let exp = input
+        .replace(/π/g,'Math.PI')
+        .replace(/e/g,'Math.E')
+        .replace(/√/g,'Math.sqrt')
+        .replace(/tg\(/gi,'Math.tan(')
+        .replace(/sin\(/gi,'Math.sin(')
+        .replace(/cos\(/gi,'Math.cos(')
+        .replace(/tan\(/gi,'Math.tan(')
+        .replace(/ln\(/gi,'Math.log(')
+        .replace(/log\(/gi,'Math.log10(')
+        .replace(/x/gi,'0'); // X remplacé par 0 par défaut, tu peux modifier
+
+    let result;
+    try{
+        result = eval(exp);
+        if(!isFinite(result)) result='Erreur';
+    }catch{
+        result='Erreur';
+    }
+
+    historyDiv.innerHTML += `<div>${input} = ${result}</div>`;
+    display.innerText = result;
+    input = '';
+}
+</script>
+
+</body>
+</html>
