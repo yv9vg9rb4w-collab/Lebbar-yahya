@@ -2,195 +2,103 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>CalcPro Radiant Gem</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CalcPro 3D Algorithm</title>
     <style>
-        body { margin: 0; overflow: hidden; background: #000; font-family: 'Segoe UI', sans-serif; }
+        body { margin: 0; background: #000; overflow: hidden; font-family: monospace; }
         canvas { display: block; }
-
-        #ui {
-            position: absolute; width: 100%; height: 100%;
-            pointer-events: none; z-index: 10;
-            display: flex; flex-direction: column; justify-content: space-between;
-            padding: 30px; box-sizing: border-box;
+        .code-overlay {
+            position: absolute; top: 10px; left: 10px;
+            color: #00ff88; font-size: 12px; pointer-events: none;
         }
-        .neon { 
-            color: #00ff88; 
-            text-shadow: 0 0 15px #00ff88, 0 0 25px rgba(0, 255, 136, 0.5); 
-            font-weight: bold; 
-            letter-spacing: 1px;
-        }
-        .header-text { font-size: 14px; line-height: 1.5; font-family: 'Courier New', monospace; }
-        .footer-text { text-align: center; font-size: clamp(18px, 5vw, 24px); margin-bottom: 10px; }
     </style>
 </head>
 <body>
 
-    <div id="ui">
-        <div class="neon header-text">
-            SYSTEM: CALCPRO_V9<br>
-            RENDER: DIAMOND_RADIANT<br>
-            EFFECT: NEON_GLOW
-        </div>
-        <div class="neon footer-text">CalcPro © Lebbar Yahya</div>
-    </div>
+<div class="code-overlay">
+    <span style="color:#ff79c6;">class</span> <span style="color:#8be9fd;">Engine3D</span> {<br>
+    &nbsp;&nbsp;render: <span style="color:#f1fa8c;">"ALGO_MATH_SOLID"</span><br>
+    }
+</div>
 
-    <canvas id="c"></canvas>
+<canvas id="canvas3d"></canvas>
 
-    <script>
-        const canvas = document.getElementById('c');
-        const ctx = canvas.getContext('2d');
-        let w, h, nodes, faces;
-        let angleX = 0, angleY = 0;
-        let stars = [];
+<script>
+    const canvas = document.getElementById('canvas3d');
+    const ctx = canvas.getContext('2d');
 
-        // --- GÉOMÉTRIE DU DIAMANT (Octaèdre sophistiqué) ---
-        nodes = [
-            [0, 1.5, 0], [1, 0, 1], [1, 0, -1], 
-            [-1, 0, -1], [-1, 0, 1], [0, -1.5, 0]
-        ];
+    let width, height;
+    let angle = 0;
 
-        // Faces avec des couleurs de base
-        faces = [
-            [0, 1, 2, "hsl(120, 100%, 50%)"], [0, 2, 3, "hsl(150, 100%, 50%)"], 
-            [0, 3, 4, "hsl(180, 100%, 50%)"], [0, 4, 1, "hsl(210, 100%, 50%)"],
-            [5, 1, 2, "hsl(240, 100%, 50%)"], [5, 2, 3, "hsl(270, 100%, 50%)"], 
-            [5, 3, 4, "hsl(300, 100%, 50%)"], [5, 4, 1, "hsl(330, 100%, 50%)"]
-        ];
+    // 1. LES DONNÉES : Un cube est une liste de points (x, y, z)
+    const points = [
+        {x: -1, y: -1, z:  1}, {x:  1, y: -1, z:  1},
+        {x:  1, y:  1, z:  1}, {x: -1, y:  1, z:  1},
+        {x: -1, y: -1, z: -1}, {x:  1, y: -1, z: -1},
+        {x:  1, y:  1, z: -1}, {x: -1, y:  1, z: -1}
+    ];
 
-        // --- FOND STELLAIRE ANIMÉ ---
-        function createStars() {
-            stars = [];
-            for (let i = 0; i < 150; i++) {
-                stars.push({
-                    x: Math.random() * w,
-                    y: Math.random() * h,
-                    size: Math.random() * 2 + 0.5,
-                    opacity: Math.random() * 0.7 + 0.3,
-                    speed: Math.random() * 0.5 + 0.1
-                });
-            }
-        }
+    // Les connexions entre les points pour former les lignes
+    const links = [
+        [0, 1], [1, 2], [2, 3], [3, 0], // Face avant
+        [4, 5], [5, 6], [6, 7], [7, 4], // Face arrière
+        [0, 4], [1, 5], [2, 6], [3, 7]  // Côtés
+    ];
 
-        function drawStars() {
-            ctx.shadowBlur = 0; // Pas de flou pour les étoiles
-            stars.forEach(s => {
-                s.x -= s.speed;
-                if (s.x < 0) s.x = w;
-                ctx.fillStyle = `rgba(255, 255, 255, ${s.opacity})`;
-                ctx.beginPath();
-                ctx.arc(s.x, s.y, s.size, 0, Math.PI * 2);
-                ctx.fill();
-            });
-        }
+    function resize() {
+        width = canvas.width = window.innerWidth;
+        height = canvas.height = window.innerHeight;
+    }
 
-        function resize() {
-            w = canvas.width = window.innerWidth;
-            h = canvas.height = window.innerHeight;
-            createStars(); // Recréer les étoiles au redimensionnement
-        }
+    function draw() {
+        ctx.fillStyle = '#000';
+        ctx.fillRect(0, 0, width, height);
 
-        function rotate(node, ax, ay) {
-            let x = node[0], y = node[1], z = node[2];
-            // Rotation Y
-            let nx = x * Math.cos(ay) - z * Math.sin(ay);
-            let nz = x * Math.sin(ay) + z * Math.cos(ay);
-            // Rotation X
-            let ny = y * Math.cos(ax) - nz * Math.sin(ax);
-            nz = y * Math.sin(ax) + nz * Math.cos(ax);
-            return [nx, ny, nz];
-        }
+        angle += 0.02; // Vitesse de rotation
 
-        function draw() {
-            ctx.fillStyle = "black";
-            ctx.fillRect(0, 0, w, h);
-            
-            drawStars(); // Dessiner le fond
+        // 2. L'ALGORITHME DE PROJECTION
+        const projectedPoints = points.map(p => {
+            // Rotation sur l'axe Y (Trigonométrie !)
+            let x = p.x * Math.cos(angle) - p.z * Math.sin(angle);
+            let z = p.x * Math.sin(angle) + p.z * Math.cos(angle);
+            let y = p.y;
 
-            angleX += 0.01;
-            angleY += 0.015;
+            // Rotation sur l'axe X
+            let tempY = y * Math.cos(angle * 0.5) - z * Math.sin(angle * 0.5);
+            z = y * Math.sin(angle * 0.5) + z * Math.cos(angle * 0.5);
+            y = tempY;
 
-            // Projection Perspective
-            let projected = nodes.map(n => {
-                let r = rotate(n, angleX, angleY);
-                let dist = 4; // Distance caméra
-                let scale = w / (dist + r[2]); 
-                return [
-                    r[0] * scale / 2.5 + w / 2, // Ajustement de la taille
-                    r[1] * scale / 2.5 + h / 2,
-                    r[2] // Profondeur pour le tri
-                ];
-            });
-
-            // Tri des faces (Algorithme du Peintre)
-            const sorted = faces.map((f, index) => {
-                let z = (projected[f[0]][2] + projected[f[1]][2] + projected[f[2]][2]) / 3;
-                return { f, z, index };
-            }).sort((a, b) => b.z - a.z);
-
-            // Rendu des faces solides avec couleurs dynamiques et lueur
-            const timeHue = (Date.now() * 0.0001) % 1; // Animation de la couleur globale
-            sorted.forEach(obj => {
-                let f = obj.f;
-                ctx.beginPath();
-                ctx.moveTo(projected[f[0]][0], projected[f[0]][1]);
-                ctx.lineTo(projected[f[1]][0], projected[f[1]][1]);
-                ctx.lineTo(projected[f[2]][0], projected[f[2]][1]);
-                ctx.closePath();
-
-                // Couleur basée sur le temps et la position
-                let faceHue = (timeHue * 360 + obj.index * 45) % 360;
-                let fillColor = `hsla(${faceHue}, 100%, 50%, 0.6)`;
-                let strokeColor = `hsla(${faceHue}, 100%, 70%, 1)`;
-
-                ctx.fillStyle = fillColor;
-                ctx.globalAlpha = 0.8;
-                ctx.fill();
-                
-                // Arêtes brillantes (effet néon)
-                ctx.shadowColor = strokeColor;
-                ctx.shadowBlur = 15;
-                ctx.strokeStyle = strokeColor;
-                ctx.lineWidth = 2;
-                ctx.globalAlpha = 1;
-                ctx.stroke();
-
-                // Effet de reflet interne blanc (simule la lumière)
-                ctx.shadowBlur = 0; // Désactiver le flou pour le reflet
-                ctx.fillStyle = "rgba(255,255,255,0.15)";
-                ctx.fill();
-            });
-
-            requestAnimationFrame(draw);
-        }
-
-        // Contrôle Tactile/Souris
-        let lastX, lastY;
-        const rotateObject = (clientX, clientY) => {
-            if (lastX !== undefined && lastY !== undefined) {
-                const dx = (clientX - lastX) * 0.01;
-                const dy = (clientY - lastY) * 0.01;
-                angleY += dx;
-                angleX += dy;
-            }
-            lastX = clientX;
-            lastY = clientY;
-        };
-
-        window.addEventListener('mousemove', (e) => {
-            rotateObject(e.clientX, e.clientY);
+            // Transformation 3D -> 2D (Perspective)
+            let zoom = 400;
+            let perspective = zoom / (zoom + z * 100);
+            return {
+                x: x * 100 * perspective + width / 2,
+                y: y * 100 * perspective + height / 2
+            };
         });
-        window.addEventListener('mousedown', () => { lastX = undefined; lastY = undefined; }); // Reset on click start
 
-        window.addEventListener('touchmove', (e) => {
-            e.preventDefault();
-            rotateObject(e.touches[0].clientX, e.touches[0].clientY);
-        }, {passive: false});
-        window.addEventListener('touchstart', () => { lastX = undefined; lastY = undefined; }); // Reset on touch start
+        // 3. LE DESSIN
+        ctx.strokeStyle = '#00ff88';
+        ctx.lineWidth = 2;
+        ctx.shadowBlur = 15;
+        ctx.shadowColor = '#00ff88';
 
-        window.addEventListener('resize', resize);
-        resize();
-        draw();
-    </script>
+        links.forEach(link => {
+            const p1 = projectedPoints[link[0]];
+            const p2 = projectedPoints[link[1]];
+            ctx.beginPath();
+            ctx.moveTo(p1.x, p1.y);
+            ctx.lineTo(p2.x, p2.y);
+            ctx.stroke();
+        });
+
+        requestAnimationFrame(draw);
+    }
+
+    window.addEventListener('resize', resize);
+    resize();
+    draw();
+</script>
+
 </body>
 </html>
