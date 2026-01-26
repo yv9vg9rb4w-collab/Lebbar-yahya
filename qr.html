@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<title>QR Code – CalcPro</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<!-- Bibliothèque QR Code -->
+<script src="https://cdn.jsdelivr.net/npm/qrcodejs/qrcode.min.js"></script>
+
+<style>
+body {
+  margin: 0;
+  background: #000;
+  font-family: Arial, sans-serif;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  color: white;
+}
+.box {
+  background: #111;
+  padding: 25px;
+  border-radius: 16px;
+  text-align: center;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, .7);
+}
+.title {
+  font-size: 20px;
+  margin-bottom: 15px;
+  color: #38bdf8;
+  font-weight: bold;
+}
+#qrcode {
+  background: white;
+  padding: 10px;
+  border-radius: 12px;
+}
+.url {
+  margin-top: 12px;
+  font-size: 14px;
+  color: #ccc;
+}
+</style>
+</head>
+
+<body>
+
+<div class="box">
+  <div class="title">🔳 QR Code – CalcPro</div>
+  <div id="qrcode"></div>
+  <div class="url">https://yv9vg9rb4w-collab.github.io/Lebbar-yahya/</div>
+</div>
+
+<script>
+const url = "https://yv9vg9rb4w-collab.github.io/Lebbar-yahya/";
+new QRCode(document.getElementById("qrcode"), {
+  text: url,
+  width: 200,
+  height: 200,
+  colorDark : "#000000",
+  colorLight : "#ffffff",
+  correctLevel : QRCode.CorrectLevel.H
+});
+</script>
+
+</body>
+</html>
