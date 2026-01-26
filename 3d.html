@@ -2,103 +2,168 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CalcPro 3D Algorithm</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>CalcPro Pyramid Fortress</title>
     <style>
-        body { margin: 0; background: #000; overflow: hidden; font-family: monospace; }
-        canvas { display: block; }
-        .code-overlay {
-            position: absolute; top: 10px; left: 10px;
-            color: #00ff88; font-size: 12px; pointer-events: none;
+        body { margin: 0; overflow: hidden; background: #000; font-family: 'Courier New', monospace; }
+        canvas { display: block; width: 100vw; height: 100vh; }
+        #overlay {
+            position: absolute; width: 100%; height: 100%;
+            pointer-events: none; z-index: 10;
+            display: flex; flex-direction: column; justify-content: space-between;
+            padding: 25px; box-sizing: border-box;
+        }
+        .neon-green { 
+            color: #00ff88; 
+            text-shadow: 0 0 10px #00ff88; 
+            font-weight: bold; 
+            font-size: 12px;
+            line-height: 1.4;
+        }
+        .footer { 
+            text-align: right; 
+            font-size: 20px; 
+            text-shadow: 0 0 20px #00ff88;
         }
     </style>
 </head>
 <body>
 
-<div class="code-overlay">
-    <span style="color:#ff79c6;">class</span> <span style="color:#8be9fd;">Engine3D</span> {<br>
-    &nbsp;&nbsp;render: <span style="color:#f1fa8c;">"ALGO_MATH_SOLID"</span><br>
-    }
-</div>
+    <div id="overlay">
+        <div class="neon-green">
+            SYSTEM : PYRAMID_FORTRESS_V10 ><br>
+            ENGINE : QUANTUM_MATH_3D<br>
+            RENDER : SOLID_DYNAMIC_COLOR<br>
+            STATUS : OPERATIONAL
+        </div>
+        <div class="neon-green footer">CalcPro © Lebbar Yahya</div>
+    </div>
 
-<canvas id="canvas3d"></canvas>
+    <canvas id="render"></canvas>
 
-<script>
-    const canvas = document.getElementById('canvas3d');
-    const ctx = canvas.getContext('2d');
+    <script>
+        const canvas = document.getElementById('render');
+        const ctx = canvas.getContext('2d');
+        let w, h;
+        let angleX = 0, angleY = 0;
+        let stars = [];
 
-    let width, height;
-    let angle = 0;
+        // --- GÉOMÉTRIE : PYRAMIDE ---
+        const nodes = [
+            [0, -1, 0],   // Sommet (0)
+            [1, 1, 1],    // Base 1 (1)
+            [1, 1, -1],   // Base 2 (2)
+            [-1, 1, -1],  // Base 3 (3)
+            [-1, 1, 1]    // Base 4 (4)
+        ];
 
-    // 1. LES DONNÉES : Un cube est une liste de points (x, y, z)
-    const points = [
-        {x: -1, y: -1, z:  1}, {x:  1, y: -1, z:  1},
-        {x:  1, y:  1, z:  1}, {x: -1, y:  1, z:  1},
-        {x: -1, y: -1, z: -1}, {x:  1, y: -1, z: -1},
-        {x:  1, y:  1, z: -1}, {x: -1, y:  1, z: -1}
-    ];
+        const faces = [
+            [0, 1, 2], [0, 2, 3], [0, 3, 4], [0, 4, 1], // Côtés
+            [1, 2, 3, 4] // Base
+        ];
 
-    // Les connexions entre les points pour former les lignes
-    const links = [
-        [0, 1], [1, 2], [2, 3], [3, 0], // Face avant
-        [4, 5], [5, 6], [6, 7], [7, 4], // Face arrière
-        [0, 4], [1, 5], [2, 6], [3, 7]  // Côtés
-    ];
+        // --- EFFET ÉTOILES (HYPERDRIVE) ---
+        function initStars() {
+            stars = [];
+            for(let i=0; i<200; i++) {
+                stars.push({
+                    x: Math.random() * w - w/2,
+                    y: Math.random() * h - h/2,
+                    z: Math.random() * w,
+                    o: Math.random()
+                });
+            }
+        }
 
-    function resize() {
-        width = canvas.width = window.innerWidth;
-        height = canvas.height = window.innerHeight;
-    }
+        function updateStars() {
+            stars.forEach(s => {
+                s.z -= 5; // Vitesse vers l'avant
+                if(s.z <= 0) s.z = w;
+            });
+        }
 
-    function draw() {
-        ctx.fillStyle = '#000';
-        ctx.fillRect(0, 0, width, height);
+        function resize() {
+            w = canvas.width = window.innerWidth;
+            h = canvas.height = window.innerHeight;
+            initStars();
+        }
 
-        angle += 0.02; // Vitesse de rotation
+        function rotate(node, ax, ay) {
+            let x = node[0], y = node[1], z = node[2];
+            // Rotate Y
+            let nx = x * Math.cos(ay) - z * Math.sin(ay);
+            let nz = x * Math.sin(ay) + z * Math.cos(ay);
+            // Rotate X
+            let ny = y * Math.cos(ax) - nz * Math.sin(ax);
+            nz = y * Math.sin(ax) + nz * Math.cos(ax);
+            return [nx, ny, nz];
+        }
 
-        // 2. L'ALGORITHME DE PROJECTION
-        const projectedPoints = points.map(p => {
-            // Rotation sur l'axe Y (Trigonométrie !)
-            let x = p.x * Math.cos(angle) - p.z * Math.sin(angle);
-            let z = p.x * Math.sin(angle) + p.z * Math.cos(angle);
-            let y = p.y;
+        function draw() {
+            ctx.fillStyle = '#000';
+            ctx.fillRect(0, 0, w, h);
 
-            // Rotation sur l'axe X
-            let tempY = y * Math.cos(angle * 0.5) - z * Math.sin(angle * 0.5);
-            z = y * Math.sin(angle * 0.5) + z * Math.cos(angle * 0.5);
-            y = tempY;
+            // 1. DESSINER LES ÉTOILES
+            updateStars();
+            ctx.fillStyle = "#fff";
+            stars.forEach(s => {
+                let px = s.x / (s.z / w) + w/2;
+                let py = s.y / (s.z / w) + h/2;
+                if(px > 0 && px < w && py > 0 && py < h) {
+                    let size = (1 - s.z / w) * 3;
+                    ctx.fillRect(px, py, size, size);
+                }
+            });
 
-            // Transformation 3D -> 2D (Perspective)
-            let zoom = 400;
-            let perspective = zoom / (zoom + z * 100);
-            return {
-                x: x * 100 * perspective + width / 2,
-                y: y * 100 * perspective + height / 2
-            };
-        });
+            angleX += 0.01;
+            angleY += 0.015;
 
-        // 3. LE DESSIN
-        ctx.strokeStyle = '#00ff88';
-        ctx.lineWidth = 2;
-        ctx.shadowBlur = 15;
-        ctx.shadowColor = '#00ff88';
+            // 2. PROJECTION PERSPECTIVE
+            let projected = nodes.map(n => {
+                let r = rotate(n, angleX, angleY);
+                let scale = w / (4 + r[2]); 
+                return [
+                    r[0] * scale * 0.8 + w/2,
+                    r[1] * scale * 0.8 + h/2,
+                    r[2]
+                ];
+            });
 
-        links.forEach(link => {
-            const p1 = projectedPoints[link[0]];
-            const p2 = projectedPoints[link[1]];
-            ctx.beginPath();
-            ctx.moveTo(p1.x, p1.y);
-            ctx.lineTo(p2.x, p2.y);
-            ctx.stroke();
-        });
+            // 3. TRI DES FACES (Z-Sorting)
+            const sorted = faces.map((f, i) => {
+                let zSum = 0;
+                f.forEach(pIdx => zSum += projected[pIdx][2]);
+                return { f, z: zSum / f.length, i };
+            }).sort((a, b) => b.z - a.z);
 
-        requestAnimationFrame(draw);
-    }
+            // 4. RENDU SOLIDE
+            sorted.forEach(obj => {
+                let f = obj.f;
+                ctx.beginPath();
+                ctx.moveTo(projected[f[0]][0], projected[f[0]][1]);
+                for(let i=1; i<f.length; i++) ctx.lineTo(projected[f[i]][0], projected[f[i]][1]);
+                ctx.closePath();
 
-    window.addEventListener('resize', resize);
-    resize();
-    draw();
-</script>
+                // Couleur Dynamique (Cyan à Vert)
+                let hue = (Date.now() / 50 + obj.i * 20) % 60 + 140; 
+                ctx.fillStyle = `hsla(${hue}, 100%, 50%, 0.8)`;
+                ctx.fill();
 
+                // Lueur Néon sur les bords
+                ctx.strokeStyle = '#fff';
+                ctx.lineWidth = 2;
+                ctx.shadowBlur = 15;
+                ctx.shadowColor = `hsl(${hue}, 100%, 50%)`;
+                ctx.stroke();
+                ctx.shadowBlur = 0;
+            });
+
+            requestAnimationFrame(draw);
+        }
+
+        window.addEventListener('resize', resize);
+        resize();
+        draw();
+    </script>
 </body>
 </html>
