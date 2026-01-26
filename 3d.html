@@ -2,56 +2,43 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>CalcPro Radiant Diamond</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CalcPro Star Diamond</title>
     <style>
-        body { margin: 0; overflow: hidden; background: #000; font-family: 'Courier New', monospace; }
-        canvas { display: block; width: 100vw; height: 100vh; }
-        #overlay {
-            position: absolute; width: 100%; height: 100%;
-            pointer-events: none; z-index: 10;
-            display: flex; flex-direction: column; justify-content: space-between;
-            padding: 25px; box-sizing: border-box;
+        body { margin: 0; overflow: hidden; background: #000; font-family: monospace; }
+        canvas { display: block; }
+        .ui {
+            position: absolute; padding: 20px; color: #00ff88;
+            text-shadow: 0 0 10px #00ff88; pointer-events: none;
         }
-        .neon-green { 
-            color: #00ff88; 
-            text-shadow: 0 0 10px #00ff88; 
-            font-weight: bold; 
-            font-size: 13px;
-        }
-        .footer { text-align: center; font-size: 22px; margin-top: 10px; }
     </style>
 </head>
 <body>
 
-    <div id="overlay">
-        <div class="neon-green">
-            SYSTEM: CALCPRO_V11<br>
-            RENDER: RADIANT_DIAMOND<br>
-            EFFECT: NEON_GLOW_MAX
-        </div>
-        <div class="neon-green footer">CalcPro © Lebbar Yahya</div>
+    <div class="ui">
+        MODE: POINT_CLOUD_V12<br>
+        STATUS: RADIANT_GRID<br>
+        CalcPro © Lebbar Yahya
     </div>
 
-    <canvas id="diamondCanvas"></canvas>
+    <canvas id="c"></canvas>
 
     <script>
-        const canvas = document.getElementById('diamondCanvas');
+        const canvas = document.getElementById('c');
         const ctx = canvas.getContext('2d');
         let w, h, angleX = 0, angleY = 0;
 
-        // --- GÉOMÉTRIE DU DIAMANT ---
+        // Géométrie du Diamant (Points)
         const nodes = [
-            [0, 1.2, 0], // Pointe du bas (0)
-            [0.7, 0, 0.7], [0.7, 0, -0.7], [-0.7, 0, -0.7], [-0.7, 0, 0.7], // Ceinture (1,2,3,4)
-            [0.4, -0.6, 0.4], [0.4, -0.6, -0.4], [-0.4, -0.6, -0.4], [-0.4, -0.6, 0.4], // Table (5,6,7,8)
-            [0, -0.6, 0] // Centre table (9)
+            [0, 1.5, 0], [1, 0, 1], [1, 0, -1], [-1, 0, -1], [-1, 0, 1],
+            [0.5, -0.8, 0.5], [0.5, -0.8, -0.5], [-0.5, -0.8, -0.5], [-0.5, -0.8, 0.5],
+            [0, -1.2, 0]
         ];
 
-        const faces = [
-            [0, 1, 2], [0, 2, 3], [0, 3, 4], [0, 4, 1], // Pavillon (bas)
-            [1, 2, 6, 5], [2, 3, 7, 6], [3, 4, 8, 7], [4, 1, 5, 8], // Couronne (côtés)
-            [5, 6, 7, 8] // Table (haut)
+        // Connexions pour l'effet "Grille"
+        const links = [
+            [0,1],[0,2],[0,3],[0,4],[1,2],[2,3],[3,4],[4,1],
+            [1,5],[2,6],[3,7],[4,8],[5,6],[6,7],[7,8],[8,5],[5,9],[6,9],[7,9],[8,9]
         ];
 
         function resize() {
@@ -60,7 +47,7 @@
         }
 
         function rotate(node, ax, ay) {
-            let x = node[0], y = node[1], z = node[2];
+            let [x, y, z] = node;
             let nx = x * Math.cos(ay) - z * Math.sin(ay);
             let nz = x * Math.sin(ay) + z * Math.cos(ay);
             let ny = y * Math.cos(ax) - nz * Math.sin(ax);
@@ -69,50 +56,39 @@
         }
 
         function draw() {
-            ctx.fillStyle = '#000';
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.2)'; // Effet de traînée (motion blur)
             ctx.fillRect(0, 0, w, h);
 
-            angleX += 0.008;
-            angleY += 0.012;
+            angleX += 0.01;
+            angleY += 0.015;
 
-            // Projection & Tri
-            let projected = nodes.map(n => {
+            const projected = nodes.map(n => {
                 let r = rotate(n, angleX, angleY);
-                let scale = w / (3.5 + r[2]); 
-                return [r[0] * scale + w/2, r[1] * scale + h/2, r[2]];
+                let scale = w / (4 + r[2]);
+                return [r[0] * scale + w/2, r[1] * scale + h/2];
             });
 
-            const sorted = faces.map((f, i) => {
-                let z = 0; f.forEach(p => z += projected[p][2]);
-                return { f, z: z/f.length, i };
-            }).sort((a, b) => b.z - a.z);
+            // 1. Dessiner les lignes (La structure)
+            ctx.beginPath();
+            ctx.strokeStyle = 'rgba(0, 255, 136, 0.2)';
+            ctx.lineWidth = 1;
+            links.forEach(l => {
+                ctx.moveTo(projected[l[0]][0], projected[l[0]][1]);
+                ctx.lineTo(projected[l[1]][0], projected[l[1]][1]);
+            });
+            ctx.stroke();
 
-            // Rendu des facettes
-            sorted.forEach(obj => {
-                let f = obj.f;
+            // 2. Dessiner les POINTS (Les étoiles)
+            projected.forEach(p => {
                 ctx.beginPath();
-                ctx.moveTo(projected[f[0]][0], projected[f[0]][1]);
-                for(let i=1; i<f.length; i++) ctx.lineTo(projected[f[i]][0], projected[f[i]][1]);
-                ctx.closePath();
-
-                // Style Crystal : Variation de bleu/vert/blanc
-                let opaq = 0.5 + (obj.z + 1) / 4;
-                let hue = 160 + (obj.i * 10); // Teintes émeraude/diamant
+                ctx.arc(p[0], p[1], 3, 0, Math.PI * 2);
                 
-                ctx.fillStyle = `hsla(${hue}, 80%, 60%, ${opaq})`;
+                // Lueur autour du point
+                ctx.shadowBlur = 15;
+                ctx.shadowColor = "#00ff88";
+                ctx.fillStyle = "#fff";
                 ctx.fill();
-
-                // Arêtes brillantes
-                ctx.strokeStyle = `rgba(255, 255, 255, 0.8)`;
-                ctx.lineWidth = 1.5;
-                ctx.shadowBlur = 10;
-                ctx.shadowColor = `hsl(${hue}, 100%, 70%)`;
-                ctx.stroke();
                 ctx.shadowBlur = 0;
-
-                // Reflet interne (petit point blanc)
-                ctx.fillStyle = "rgba(255, 255, 255, 0.1)";
-                ctx.fill();
             });
 
             requestAnimationFrame(draw);
